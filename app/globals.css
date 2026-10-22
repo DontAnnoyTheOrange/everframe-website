@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Everframe design tokens (public site is dark; admin overrides in its own layout). */
+@theme inline {
+  --color-ink: #050505;
+  --color-ink-2: #0d0c0a;
+  --color-line: #2a2620;
+  --color-bone: #f5f1ea;
+  --color-stone: #b8b3a6;
+  --color-mute: #8a8578;
+  --color-brass: #c9a24b;
+  --color-brass-ink: #1e1706;
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+}
+
+html {
+  background: var(--color-ink);
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

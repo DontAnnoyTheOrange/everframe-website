@@ -1,0 +1,644 @@
+<title>Everframe Planning Dossier</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column with a sticky section index; dark ink-and-brass palette taken from the Everframe loader (black, bone, brass). */
+:root{
+  --bg:#f6f3ec; --surface:#ffffff; --fg:#1d1a14; --muted:#6b6557; --line:#ddd6c6;
+  --brass:#8a6a1e; --brass-soft:#f0e6c9; --ok:#2f6b3f; --warn:#9a5b00; --risk:#9b2c2c;
+  --code-bg:#efe9da;
+  --serif:'Newsreader',Georgia,serif; --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0b09; --surface:#15130f; --fg:#efe9db; --muted:#a39c8a; --line:#2b2720;
+  --brass:#c9a24b; --brass-soft:#2a2210; --ok:#6fbf86; --warn:#e0a24a; --risk:#e07a7a; --code-bg:#1b1812; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c0b09; --surface:#15130f; --fg:#efe9db; --muted:#a39c8a; --line:#2b2720;
+  --brass:#c9a24b; --brass-soft:#2a2210; --ok:#6fbf86; --warn:#e0a24a; --risk:#e07a7a; --code-bg:#1b1812; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px;padding-block:32px 80px}
+@media(max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{position:static!important;display:flex;flex-wrap:wrap;gap:6px 14px}}
+.toc{position:sticky;top:24px;align-self:start;font-size:13px;display:flex;flex-direction:column;gap:6px}
+.toc a{color:var(--muted);text-decoration:none}.toc a:hover{color:var(--brass)}
+.toc b{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--brass);margin-bottom:4px}
+main{min-width:0}
+h1{font:600 clamp(32px,5vw,48px)/1.1 var(--serif);margin:0 0 12px;text-wrap:balance}
+h2{font:600 28px/1.2 var(--serif);margin:56px 0 12px;padding-top:24px;border-top:1px solid var(--line);text-wrap:balance}
+h3{font:600 17px/1.3 var(--sans);margin:28px 0 8px}
+p,li{max-width:72ch}
+.lead{font-size:18px;color:var(--muted);max-width:62ch}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+code{font:13px var(--mono);background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre.code{background:var(--code-bg);padding:14px;overflow-x:auto;font:13px/1.5 var(--mono);border-radius:4px;margin:12px 0}
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-align:left;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:var(--brass)}
+.tag{font:500 11px var(--mono);padding:2px 6px;border:1px solid var(--line);border-radius:3px;white-space:nowrap}
+.must{color:var(--risk);border-color:var(--risk)}.should{color:var(--warn);border-color:var(--warn)}.could{color:var(--muted)}
+.doc{color:var(--ok);border-color:var(--ok)}.rec{color:var(--brass);border-color:var(--brass)}
+.callout{background:var(--brass-soft);border-left:3px solid var(--brass);padding:12px 16px;margin:16px 0;max-width:80ch}
+.callout.risk{border-color:var(--risk)}
+.diagram{background:var(--surface);border:1px solid var(--line);padding:16px;margin:12px 0;overflow-x:auto}
+.diagram pre{margin:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.grid2>div{border:1px solid var(--line);background:var(--surface);padding:14px 16px;min-width:0}
+.grid2 h3{margin-top:0}
+ol.dec{padding-left:22px}ol.dec li{margin-bottom:12px}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+a:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Sections">
+<b>Contents</b>
+<a href="#s1">1 Summary</a><a href="#s2">2 Requirements</a><a href="#s3">3 Gaps and assumptions</a><a href="#s4">4 Architecture</a><a href="#s5">5 Project structure</a><a href="#s6">6 Database and ERD</a><a href="#s7">7 Use cases</a><a href="#s8">8 Activity diagrams</a><a href="#s9">9 Booking logic</a><a href="#s10">10 Security</a><a href="#s11">11 Roadmap</a><a href="#s12">12 Setup checklist</a><a href="#s13">13 Launch criteria</a><a href="#s14">14 Decisions for you</a>
+</nav>
+<main>
+<div class="eyebrow">Everframe Productions · Planning dossier · Phase 1</div>
+<h1>Everframe website: requirements, design and plan</h1>
+<p class="lead">Nothing here is built yet. This is the analysis you approve before any database or app code is written. Items tagged <span class="tag doc">DOC</span> come from your feature document. Items tagged <span class="tag rec">REC</span> are my recommendations or assumptions.</p>
+
+<h2 id="s1">1. Executive summary</h2>
+<p><b>What the document asks for.</b> A dark, cinematic, scroll-driven photography site for event coverage in the Philippines (weddings, debuts and 7th birthdays, corporate events, concerts). The homepage is a chaptered story: shutter load-in, hero with two calls to action, studio introduction, featured work as full-viewport category pages, a four-step client journey (Inquire, Plan, Shoot, Deliver), three packages, social proof, services, and a closing contact block.</p>
+<p>Booking gets its own page at <code>/booking</code>, reached from a pricing calculator or directly from the nav. A separate light-themed admin tool shows the same bookings table as a sortable schedule, with a <i>+ New booking</i> button for requests that arrive by Messenger or phone. Statuses named in the document: <code>inquiry</code>, <code>pending_confirmation</code>, <code>confirmed</code>.</p>
+<p><b>What you already have.</b> The zip contains a Next.js scaffold: a brand loading screen (black, bone <code>#F5F1EA</code>, brass <code>#C9A24B</code>, EF monogram with shutter icon), a placeholder hero, Tailwind 4, Framer Motion. It is a start, not the design: the hero has no real imagery and no routes exist.</p>
+<div class="callout"><b>Scaffold issues found.</b>
+<ul>
+<li>The loader forces an <b>8 second</b> minimum. The document says "brief". I recommend about 2 seconds, shown once per session.</li>
+<li><code>globals.css</code> still sets a white background and Arial. The public theme needs dark tokens and the chosen fonts.</li>
+<li>The hero copy says "photography and videography". The document only describes photography. See decision 5.</li>
+<li>Versions pinned in <code>package.json</code> trail the registry as of today (Next 16.3.0 vs 16.4.2, React 19.2.8 vs 19.3.1, Framer Motion 13 vs 14.3). I will re-verify and pin at Phase A.</li>
+<li>Nothing in the scaffold uses the Supabase, Cloudinary, Zod or lightbox packages yet.</li>
+</ul></div>
+<p class="callout risk"><b>Limit of this review.</b> I could read the document's text. The UI mockups in it are images and did not come through as readable content, so layout details (exact card contents, calendar design, admin columns) are taken from the written descriptions only. If any mockup contradicts this plan, tell me which one.</p>
+
+<h2 id="s2">2. Requirements inventory</h2>
+<p>Priorities: Must, Should, Could. User: V visitor, A administrator. Acceptance criteria are short; full test cases come in Phase F.</p>
+<div class="tw"><table>
+<thead><tr><th>ID</th><th>Requirement</th><th>Pri</th><th>User</th><th>Src</th><th>Acceptance</th></tr></thead><tbody>
+<tr><td>M1-01</td><td>Shutter load-in animation (CSS clip-path), shown once per session</td><td><span class="tag should">Should</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Plays under 2.5s; skipped on repeat visit and with reduced motion</td></tr>
+<tr><td>M1-02</td><td>Hero: full-bleed video or slow-pan image, studio name, positioning line, CTAs "See our work" and "Message us"; booking shortcut</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>CTAs scroll to teaser, open Messenger link, and reach /booking</td></tr>
+<tr><td>M1-03</td><td>Studio chapter: editorial paragraph, photographer portrait, client pull-quote</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Text and image editable via settings/testimonials</td></tr>
+<tr><td>M1-04</td><td>Featured work: one scroll-snapped full-viewport panel per event category with image, 2-3 line story, "View gallery"</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Panels generated from published categories; link opens that category gallery</td></tr>
+<tr><td>M1-05</td><td>Client journey: Inquire, Plan, Shoot, Deliver with stated turnaround</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Turnaround read from settings, not hardcoded</td></tr>
+<tr><td>M1-06</td><td>Package overview: three cards, hours and starting price, linking to the calculator and a "Book this" button each, plus "Check availability"</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Prices come from the database; "Book this" prefills /booking</td></tr>
+<tr><td>M1-07</td><td>Social proof: events shot, years active, testimonials, optional venue row</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Figures from settings; no invented numbers</td></tr>
+<tr><td>M1-08</td><td>Services cards per category with one-line description and "Inquire"</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Cards driven by event_categories</td></tr>
+<tr><td>M1-09</td><td>Closing CTA: closing line, Messenger primary, email, socials, service-area note, booking secondary</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>All contact values from settings</td></tr>
+<tr><td>M2-01</td><td>Portfolio page with category filters</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag rec">REC</span></td><td>Filter shows only that category's published projects</td></tr>
+<tr><td>M2-02</td><td>Project detail page and full-screen lightbox with keyboard, touch, pinch-zoom, captions, alt text</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Arrow/Escape keys work; focus returns on close</td></tr>
+<tr><td>M2-03</td><td>Blur placeholders while images load; empty and error states</td><td><span class="tag should">Should</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>No layout shift; empty category shows message</td></tr>
+<tr><td>M3-01</td><td>Pricing page with three packages and interactive calculator (package, category, hours, extra hours, add-ons)</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Itemised total matches server calculation for the same inputs</td></tr>
+<tr><td>M3-02</td><td>"Proceed to booking" hands calculator state to /booking</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Booking opens prefilled, e.g. Standard, Debut, 4 hrs</td></tr>
+<tr><td>M4-01</td><td>Dedicated <code>/booking</code> page, linkable, in top nav</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Direct URL works cold and prefilled</td></tr>
+<tr><td>M4-02</td><td>Calendar shows unavailable dates; date and time selection</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Confirmed bookings and blocks show as unavailable, without client details</td></tr>
+<tr><td>M4-03</td><td>Form state survives leaving and returning</td><td><span class="tag should">Should</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Draft restored from the browser on return (excluding nothing sensitive beyond what the user typed)</td></tr>
+<tr><td>M4-04</td><td>Submission creates a <i>request</i> (<code>pending_confirmation</code>), never a confirmed booking; clear message to the client</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag rec">REC</span></td><td>Success screen says "request received, not yet confirmed"</td></tr>
+<tr><td>M4-05</td><td>Server recomputes price and rechecks availability on submit</td><td><span class="tag must">Must</span></td><td>V</td><td><span class="tag rec">REC</span></td><td>Tampered price field is ignored; conflicting slot is refused</td></tr>
+<tr><td>M4-06</td><td>General inquiry form without a date (<code>inquiry</code> status)</td><td><span class="tag should">Should</span></td><td>V</td><td><span class="tag doc">DOC</span></td><td>Stored as inquiry; does not occupy a date</td></tr>
+<tr><td>M5-01</td><td>Admin login via Supabase Auth, role verified server-side and in RLS</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Non-admin session gets 403 on every admin route and operation</td></tr>
+<tr><td>M5-02</td><td>Public sign-up disabled; first admin created manually</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Sign-up endpoint rejected; no self-grant path</td></tr>
+<tr><td>M6-01</td><td>Category CRUD (create, rename, reorder, delete safely)</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Deleting a category with projects is blocked or reassigns</td></tr>
+<tr><td>M6-02</td><td>Project CRUD, multi-image upload, cover, titles, captions, alt text, reorder, publish/unpublish</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Unpublished projects invisible to the public</td></tr>
+<tr><td>M6-03</td><td>Upload validation (type, size) and safe handling of partial failure</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Non-image or oversize file rejected; no orphan DB rows</td></tr>
+<tr><td>M7-01</td><td>Bookings table: sort, filter by status, search, pagination, detail view with price breakdown</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Table is the default schedule view; matches status enum</td></tr>
+<tr><td>M7-02</td><td>Confirm, reject, cancel, complete with valid transitions only; internal notes; status history</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Illegal transition refused; double click does not duplicate</td></tr>
+<tr><td>M7-03</td><td>Manual booking ("+ New booking") from Messenger or phone</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Same conflict rules; appears on the public calendar as unavailable</td></tr>
+<tr><td>M7-04</td><td>Block and unblock dates or times</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Block overlapping a confirmed booking is refused</td></tr>
+<tr><td>M7-05</td><td>Calendar view in addition to the table</td><td><span class="tag could">Could</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Same data as table</td></tr>
+<tr><td>M7-06</td><td>Dashboard metrics computed from real rows (upcoming confirmed, new inquiries, follow-ups, month's confirmed value)</td><td><span class="tag should">Should</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Each metric has a written definition and a test</td></tr>
+<tr><td>M8-01</td><td>Packages, add-ons, extra-hour rate editable by admin</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>Changing a price does not alter existing bookings</td></tr>
+<tr><td>M8-02</td><td>Testimonials, stats, social links, Messenger link, email, service area editable</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag rec">REC</span></td><td>No hardcoded contact data in source</td></tr>
+<tr><td>M9-01</td><td>Deployment on Vercel from GitHub; environment variables; production auth URLs</td><td><span class="tag must">Must</span></td><td>A</td><td><span class="tag doc">DOC</span></td><td>Live booking flow tested end to end</td></tr>
+</tbody></table></div>
+
+<h3>Nonfunctional requirements</h3>
+<div class="tw"><table>
+<thead><tr><th>ID</th><th>Area</th><th>Requirement</th></tr></thead><tbody>
+<tr><td>NF-01</td><td>Security</td><td>RLS on every exposed table; service-role key server only; no secrets in <code>NEXT_PUBLIC_</code>; security headers; rate limiting on public forms.</td></tr>
+<tr><td>NF-02</td><td>Privacy</td><td>Client name, phone, email and notes readable only by admins. Collect the minimum. Include a short privacy notice (Philippine Data Privacy Act context; confirm wording with a professional).</td></tr>
+<tr><td>NF-03</td><td>Responsive and a11y</td><td>Works from 360px up; WCAG 2.2 AA target; keyboard operable lightbox, calendar and forms; visible focus; <code>prefers-reduced-motion</code> honoured.</td></tr>
+<tr><td>NF-04</td><td>Images</td><td>Cloudinary <code>f_auto,q_auto</code> with responsive widths; LCP image prioritised; blur placeholder; originals never served raw.</td></tr>
+<tr><td>NF-05</td><td>Performance</td><td>Targets: LCP under 2.5s and CLS under 0.1 on mobile for home and portfolio. Targets are goals until measured.</td></tr>
+<tr><td>NF-06</td><td>SEO</td><td>Per-page metadata, Open Graph images, sitemap, robots, structured data (LocalBusiness), clean slugs.</td></tr>
+<tr><td>NF-07</td><td>Integrity</td><td>Foreign keys, check constraints, exclusion constraint on confirmed bookings, price snapshots.</td></tr>
+<tr><td>NF-08</td><td>Reliability</td><td>Friendly error pages, <code>error.tsx</code> and <code>not-found.tsx</code>, idempotent submit, logged server errors.</td></tr>
+<tr><td>NF-09</td><td>Maintainability</td><td>TypeScript strict, Zod schemas shared by client and server, generated DB types, one pricing function in the database.</td></tr>
+<tr><td>NF-10</td><td>Scalability</td><td>A one-photographer studio is far inside free-tier limits; schema can add a resource dimension later.</td></tr>
+<tr><td>NF-11</td><td>Backup</td><td>Supabase free tier has no guaranteed point-in-time recovery. Plan: weekly <code>pg_dump</code> export to your own storage, and consider the paid plan once real clients depend on it.</td></tr>
+<tr><td>NF-12</td><td>Browsers</td><td>Last two versions of Chrome, Safari, Firefox, Edge; iOS Safari and Android Chrome.</td></tr>
+</tbody></table></div>
+
+<h2 id="s3">3. Gaps, ambiguities and assumptions</h2>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Issue</th><th>Assumption I will use unless you say otherwise</th></tr></thead><tbody>
+<tr><td>G1</td><td>Package prices now known. Still missing: add-ons, extra-hour or custom rates, deliverables, turnaround, video pricing</td><td>Confirmed prices seeded. Everything else admin-editable and shown as "custom quote" or hidden until you provide it.</td></tr>
+<tr><td>G2</td><td>Chapter numbering differs: text lists 00-08, mockup notes mention 10 chapters and a "chapter 8 package overview"</td><td>Nine homepage sections per your master prompt, in the document's order. Numbers are internal only.</td></tr>
+<tr><td>G3</td><td>Number of photographers and simultaneous events</td><td>One photographer, one event at a time. Overlap is a conflict.</td></tr>
+<tr><td>G4</td><td>Whether a pending request holds the date</td><td>It does not hold it publicly. See section 9 and decision 1.</td></tr>
+<tr><td>G5</td><td>Buffer between events, travel, venue location</td><td>Configurable buffer, default 60 minutes. Venue and city captured as text. No travel fee logic yet.</td></tr>
+<tr><td>G6</td><td>Deposit or payment</td><td>Out of scope. Site records agreed price only; no online payment.</td></tr>
+<tr><td>G7</td><td>Time zone and currency</td><td>Asia/Manila, PHP. Stored as <code>timestamptz</code>.</td></tr>
+<tr><td>G8</td><td>Client notifications</td><td>No automatic emails in v1. Admin sees new requests on the dashboard and contacts clients via Messenger or email. Optional later: email through Resend.</td></tr>
+<tr><td>G9</td><td>Services vs portfolio categories vs booking event types</td><td>One table, <code>event_categories</code>, used by all three, to avoid duplicate sources of truth.</td></tr>
+<tr><td>G10</td><td>The document tells you to model the site on another person's portfolio ("Ian")</td><td>Used as a structural reference only. No copied copy, assets or code. "Custom cursor / mascot" and the Singularity canvas piece are not required for Everframe and are left out.</td></tr>
+<tr><td>G11</td><td>Hero video vs image; logo files; photos</td><td>You supply real shoots and the exact logo SVG. Until then the scaffold's recreated monogram and gradient placeholders stay.</td></tr>
+<tr><td>G12</td><td>Document says Next.js 14+</td><td>Use the scaffold's current Next.js 16 line, App Router.</td></tr>
+</tbody></table></div>
+
+<h2 id="s4">4. Architecture</h2>
+<h3>Roles of each service</h3>
+<div class="grid2">
+<div><h3>Supabase (keep)</h3><p>PostgreSQL, Auth and RLS. Source of truth for bookings, schedule, packages, add-ons, categories, project and image metadata, testimonials, settings, admin roles. Free tier adequate. Downside: free projects pause after inactivity, and backups are limited.</p></div>
+<div><h3>Cloudinary (keep)</h3><p>Stores and transforms the image files. The database stores only the public ID, dimensions, alt text and order. Free tier is enough to start. Secret stays on the server; uploads use a server-signed request.</p></div>
+<div><h3>Sanity (drop)</h3><p>It would be a second place to edit portfolio content, and the admin dashboard you require already does that. Dropping it avoids duplicate sources of truth, another login, and another bill. Reconsider only if you later want rich editorial pages.</p></div>
+<div><h3>Vercel + GitHub (keep)</h3><p>Hosting, preview deployments, environment secrets. Free Hobby plan is for non-commercial use; a paid business site may need Pro. Check Vercel's current terms before launch.</p></div>
+<div><h3>Framer Motion (keep)</h3><p>Reveal and scroll animation. Used sparingly, with reduced-motion fallback.</p></div>
+<div><h3>Lenis (skip) and lightbox</h3><p>Lenis changes native scroll and can fight scroll-snap, anchors and accessibility. Your featured-work chapter relies on scroll-snap, so skip it. Lightbox: <code>yet-another-react-lightbox</code>, which is React-native with zoom, captions and keyboard support. PhotoSwipe is fine but needs more glue. BlurHash dropped: Cloudinary can serve a tiny blurred version, so no extra package or column.</p></div>
+</div>
+<h3>Component diagram</h3>
+<div class="diagram"><pre class="mermaid">
+flowchart LR
+  V["Visitor browser"]
+  A["Admin browser"]
+  subgraph Vercel["Vercel: Next.js App Router"]
+    SC["Server Components: public pages, reads"]
+    SA["Server Actions and Route Handlers: booking submit, admin writes, upload signing"]
+    MW["Middleware: session refresh, admin gate"]
+  end
+  subgraph Supa["Supabase"]
+    AU["Auth"]
+    DB[("PostgreSQL + RLS + SQL functions")]
+  end
+  CL["Cloudinary: image storage and delivery"]
+  V --> SC
+  V --> SA
+  V -. "image requests via CDN" .-> CL
+  A --> MW --> SA
+  SC -->|"anon key, RLS limits to published data"| DB
+  SA -->|"admin session JWT, RLS checks is_admin"| DB
+  SA -->|"service role, server only, booking RPC"| DB
+  SA --> AU
+  SA -->|"signed upload params, delete with API secret"| CL
+  A -->|"direct signed upload"| CL
+</pre></div>
+<h3>Where things run, and where secrets may live</h3>
+<div class="tw"><table>
+<thead><tr><th>Operation</th><th>Runs on</th><th>Why</th></tr></thead><tbody>
+<tr><td>Render public pages, read published portfolio</td><td>Server Components</td><td>Fast, SEO friendly; RLS allows only published rows</td></tr>
+<tr><td>Calculator preview, calendar UI, lightbox, animation</td><td>Client Components</td><td>Interactivity only. Price shown is an estimate.</td></tr>
+<tr><td>Final price, availability check, booking insert</td><td>One Postgres function, called from a Server Action</td><td>Atomic; the browser cannot alter it</td></tr>
+<tr><td>Admin writes</td><td>Server Actions with verified admin session</td><td>Permission checked in code and again by RLS</td></tr>
+<tr><td>Image upload signing and deletion</td><td>Server only</td><td>Needs Cloudinary secret</td></tr>
+</tbody></table></div>
+<div class="tw"><table>
+<thead><tr><th>Value</th><th>Public?</th><th>Allowed location</th></tr></thead><tbody>
+<tr><td>NEXT_PUBLIC_SUPABASE_URL</td><td>Public</td><td>.env.local, Vercel</td></tr>
+<tr><td>NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</td><td>Public (safe only because of RLS)</td><td>.env.local, Vercel</td></tr>
+<tr><td>SUPABASE_SERVICE_ROLE_KEY</td><td><b>Secret</b></td><td>Server env only</td></tr>
+<tr><td>NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</td><td>Public</td><td>.env.local, Vercel</td></tr>
+<tr><td>CLOUDINARY_API_KEY / API_SECRET</td><td><b>Secret</b></td><td>Server env only</td></tr>
+<tr><td>NEXT_PUBLIC_SITE_URL</td><td>Public</td><td>.env.local, Vercel</td></tr>
+</tbody></table></div>
+<p>Contact details (Messenger link, email, socials) live in <code>site_settings</code>, editable in the admin, not in environment variables.</p>
+
+<h2 id="s5">5. Proposed project structure</h2>
+<pre class="code">everframe-website/
+├─ app/
+│  ├─ (public)/              layout with dark theme + nav
+│  │  ├─ page.tsx            homepage chapters
+│  │  ├─ portfolio/          index + [category] + [project]
+│  │  ├─ pricing/            packages + calculator
+│  │  ├─ booking/            booking flow
+│  │  └─ contact/
+│  ├─ (admin)/admin/         light theme + sidebar, protected layout
+│  │  ├─ login/  portfolio/  categories/  packages/  bookings/  schedule/  settings/
+│  ├─ api/cloudinary/sign/   upload signature route
+│  ├─ error.tsx  not-found.tsx  loading.tsx  sitemap.ts  robots.ts
+├─ components/  ui/  public/  admin/  portfolio/  booking/
+├─ lib/
+│  ├─ supabase/ client.ts  server.ts  admin.ts(service role, server-only)
+│  ├─ auth/ requireAdmin.ts
+│  ├─ cloudinary/ sign.ts  url.ts
+│  ├─ booking/ pricing.ts(display only)  schemas.ts(Zod)  transitions.ts
+│  └─ types/ database.ts (generated)
+├─ supabase/migrations/      ordered .sql files
+├─ tests/ unit/  e2e/        Vitest + Playwright
+├─ .env.example  README.md</pre>
+<p>Server Components by default. Client Components only for the calculator, calendar, lightbox, upload widget and forms. The route groups keep the dark public theme and light admin theme from sharing a layout.</p>
+
+<h2 id="s6">6. Database design and ERD</h2>
+<div class="diagram"><pre class="mermaid">
+erDiagram
+  auth_users ||--o| admin_users : "is"
+  event_categories ||--o{ portfolio_projects : "groups"
+  portfolio_projects ||--o{ portfolio_images : "contains"
+  event_categories ||--o{ bookings : "booked for"
+  packages ||--o{ bookings : "chosen in"
+  bookings ||--o{ booking_addons : "has lines"
+  addons ||--o{ booking_addons : "priced from"
+  bookings ||--o{ booking_status_history : "logs"
+  admin_users ||--o{ booking_status_history : "changed by"
+  admin_users ||--o{ availability_blocks : "creates"
+  event_categories ||--o{ testimonials : "about"
+  auth_users { uuid id PK }
+  admin_users { uuid user_id PK "FK auth.users"
+    text display_name
+    timestamptz created_at }
+  event_categories { uuid id PK
+    text slug UK
+    text name
+    text short_story
+    text cover_public_id
+    int sort_order
+    bool is_published }
+  portfolio_projects { uuid id PK
+    uuid category_id FK
+    text slug UK
+    text title
+    text description
+    date shoot_date
+    bool is_published
+    int sort_order }
+  portfolio_images { uuid id PK
+    uuid project_id FK
+    text cloudinary_public_id UK
+    int width
+    int height
+    text alt_text
+    text caption
+    int sort_order
+    bool is_cover }
+  packages { uuid id PK
+    text slug UK
+    text name
+    numeric base_price
+    numeric base_hours
+    numeric extra_hour_rate
+    text_array inclusions
+    bool is_active
+    int sort_order }
+  addons { uuid id PK
+    text name
+    numeric price
+    bool per_hour
+    bool is_active }
+  bookings { uuid id PK
+    text reference_code UK
+    text status
+    text source
+    uuid category_id FK
+    uuid package_id FK
+    text client_name
+    text client_email
+    text client_phone
+    text venue
+    timestamptz starts_at
+    timestamptz ends_at
+    numeric duration_hours
+    text package_name_snapshot
+    numeric base_price_snapshot
+    numeric extra_hours
+    numeric extra_hour_rate_snapshot
+    numeric total_price
+    text client_message
+    text internal_notes
+    timestamptz created_at
+    timestamptz updated_at }
+  booking_addons { uuid id PK
+    uuid booking_id FK
+    uuid addon_id FK
+    text name_snapshot
+    numeric unit_price_snapshot
+    numeric line_total }
+  booking_status_history { uuid id PK
+    uuid booking_id FK
+    text from_status
+    text to_status
+    uuid changed_by FK
+    timestamptz changed_at
+    text note }
+  availability_blocks { uuid id PK
+    timestamptz starts_at
+    timestamptz ends_at
+    text reason
+    uuid created_by FK }
+  testimonials { uuid id PK
+    uuid category_id FK
+    text quote
+    text author
+    bool is_published
+    int sort_order }
+  site_settings { text key PK
+    jsonb value
+    timestamptz updated_at }
+</pre></div>
+<h3>Why each table exists</h3>
+<div class="tw"><table>
+<thead><tr><th>Table</th><th>Purpose and key rules</th></tr></thead><tbody>
+<tr><td>admin_users</td><td>Whitelist of who is an administrator, keyed to the Supabase auth user. No public insert policy. Replaces a "profiles" table because there is no public user profile in this app.</td></tr>
+<tr><td>event_categories</td><td>Wedding, Debut/7th birthday, Corporate, Concert. Used for homepage panels, services cards, portfolio filters and booking event type. Deleting is restricted while projects or bookings reference it; use <code>is_published=false</code> instead.</td></tr>
+<tr><td>portfolio_projects</td><td>One gallery (a shoot). Belongs to one category. Public sees only <code>is_published</code>.</td></tr>
+<tr><td>portfolio_images</td><td>Image metadata and Cloudinary public ID. Cascade delete with project. Unique <code>(project_id, sort_order)</code> deferrable for reordering; partial unique index allows only one cover per project.</td></tr>
+<tr><td>packages</td><td>Basic, Standard, Premium: starting price, included hours, extra-hour rate, inclusion list. Check: prices and hours at least 0.</td></tr>
+<tr><td>addons</td><td>Optional extras, flat or per hour.</td></tr>
+<tr><td>bookings</td><td>Single table for website, Messenger and phone bookings, with <code>source</code>. Price and package details are <b>copied</b> in as snapshots. Checks: <code>ends_at &gt; starts_at</code>; status in the allowed list; contact fields required except for admin-created rows. Exclusion constraint on confirmed rows (section 9).</td></tr>
+<tr><td>booking_addons</td><td>Many-to-many between bookings and add-ons, with price snapshots per line.</td></tr>
+<tr><td>booking_status_history</td><td>Append-only audit of status changes; supports "follow-up" metrics.</td></tr>
+<tr><td>availability_blocks</td><td>Admin-made unavailable ranges (day off, personal commitment). Separate from bookings because a block has no client or price.</td></tr>
+<tr><td>testimonials</td><td>Quotes shown on the homepage; optional link to a category.</td></tr>
+<tr><td>site_settings</td><td>Key/value JSON for Messenger link, email, socials, service area, stats, turnaround, buffer minutes, hero text.</td></tr>
+</tbody></table></div>
+<h3>Relationships in plain language</h3>
+<ul>
+<li><b>One-to-one:</b> an auth user has at most one admin_users row.</li>
+<li><b>One-to-many:</b> category to projects; project to images; category and package to bookings; booking to its add-on lines and its status history; admin to blocks.</li>
+<li><b>Many-to-many:</b> bookings and add-ons, through <code>booking_addons</code>.</li>
+<li><b>Bookings reference packages and categories</b> with <code>ON DELETE RESTRICT</code>, so a package used by a booking cannot vanish. Packages are retired with <code>is_active=false</code>.</li>
+<li><b>Price changes:</b> the booking stores its own name, base price, extra-hour rate and add-on prices at creation. Editing a package later changes only future quotes.</li>
+<li><b>Blocks and bookings</b> are different tables but one rule: any new confirmed booking or block is checked against both, under one lock, so they cannot overlap.</li>
+<li><b>No orphans:</b> foreign keys everywhere; images cascade with their project; Cloudinary files are removed by a server step (section 8, diagram 3).</li>
+</ul>
+
+<h2 id="s7">7. Use case diagram</h2>
+<p>Mermaid has no native UML use-case diagram, so this uses a flowchart with the UML conventions: actors outside the system boundary, use cases as ovals, dashed arrows for include and extend. The <b>Admin</b> actor inherits nothing from Visitor; public actions are separated from admin-only actions by the two sub-boundaries.</p>
+<div class="diagram"><pre class="mermaid">
+flowchart LR
+  Visitor(["Actor: Visitor"])
+  Admin(["Actor: Administrator"])
+  Auth(["Actor: Supabase Auth"])
+  Img(["Actor: Cloudinary"])
+  subgraph SYS["Everframe system"]
+    subgraph PUB["Public"]
+      U1(["Browse portfolio"])
+      U2(["Filter by category"])
+      U3(["View services"])
+      U4(["Calculate package price"])
+      U5(["Check availability"])
+      U6(["Submit booking request"])
+      U7(["Submit inquiry"])
+      U8(["Contact studio via Messenger or email"])
+    end
+    subgraph ADM["Admin only"]
+      A0(["Log in and log out"])
+      A1(["Manage categories"])
+      A2(["Manage projects and images"])
+      A3(["Manage packages, add-ons, prices"])
+      A4(["Review and filter bookings"])
+      A5(["Confirm, reject, cancel, complete"])
+      A6(["Create manual booking"])
+      A7(["Block or unblock dates"])
+      A8(["View schedule and booking details"])
+      A9(["Edit testimonials and settings"])
+      A10(["Detect conflicts"])
+    end
+  end
+  Visitor --- U1 & U2 & U3 & U4 & U5 & U6 & U7 & U8
+  Admin --- A0 & A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9
+  U6 -. include .-> U5
+  U6 -. include .-> U4
+  A5 -. include .-> A10
+  A6 -. include .-> A10
+  A7 -. include .-> A10
+  A4 -. extend .-> A8
+  A0 --- Auth
+  A2 --- Img
+  U1 --- Img
+</pre></div>
+<div class="tw"><table>
+<thead><tr><th>Use case</th><th>Precondition</th><th>Outcome</th></tr></thead><tbody>
+<tr><td>Browse and filter portfolio</td><td>At least one published project</td><td>Visitor sees only published images; empty state otherwise</td></tr>
+<tr><td>Calculate package price</td><td>Active packages exist</td><td>Itemised estimate shown; not binding</td></tr>
+<tr><td>Check availability</td><td>None</td><td>Dates marked unavailable when a confirmed booking or block covers them</td></tr>
+<tr><td>Submit booking request</td><td>Valid details; slot not occupied</td><td><code>pending_confirmation</code> booking and reference code; admin must confirm</td></tr>
+<tr><td>Submit inquiry</td><td>Valid contact info</td><td><code>inquiry</code> record; occupies no date</td></tr>
+<tr><td>Log in</td><td>Account exists and is listed in admin_users</td><td>Session cookie; non-admins refused</td></tr>
+<tr><td>Manage projects and images</td><td>Admin session</td><td>Metadata in DB, files in Cloudinary, consistent</td></tr>
+<tr><td>Confirm booking</td><td>Status is pending_confirmation; no conflict</td><td><code>confirmed</code>, date blocked publicly, history row written</td></tr>
+<tr><td>Create manual booking</td><td>Admin session</td><td>Booking with <code>source</code> messenger/phone, same rules and calendar</td></tr>
+<tr><td>Block dates</td><td>No confirmed booking inside the range</td><td>Range unavailable to visitors</td></tr>
+</tbody></table></div>
+
+<h2 id="s8">8. Activity diagrams</h2>
+<h3>Diagram 1: client booking workflow</h3>
+<div class="diagram"><pre class="mermaid">
+flowchart TD
+  S(["Start"]) --> E["Choose event type"]
+  E --> P["Choose package"]
+  P --> X["Choose add-ons and hours"]
+  X --> C["Browser shows estimated price"]
+  C --> D["Pick date and start time"]
+  D --> CA{"Calendar shows free?"}
+  CA -- "No" --> D
+  CA -- "Yes" --> F["Enter client details"]
+  F --> V{"Zod validation passes?"}
+  V -- "No" --> FE["Show field errors"] --> F
+  V -- "Yes" --> SV["Server Action calls booking function"]
+  SV --> L["Lock schedule, recompute price from DB, recheck conflicts"]
+  L --> K{"Slot still free?"}
+  K -- "No" --> CF["Return date conflict message"] --> D
+  K -- "Yes" --> I["Insert booking as pending_confirmation plus add-on snapshots plus history"]
+  I --> OK["Show: request received, NOT yet confirmed, with reference code"]
+  OK --> AR["Admin reviews request"]
+  AR --> AD{"Decision"}
+  AD -- "Confirm" --> AC{"Conflict at confirm time?"}
+  AC -- "Yes" --> RJ["Admin told of conflict; reject or reschedule"]
+  AC -- "No" --> CO["Status confirmed; date unavailable publicly"]
+  AD -- "Reject" --> RJ2["Status rejected; admin messages client"]
+  CO --> End(["End"])
+  RJ --> End
+  RJ2 --> End
+</pre></div>
+<p>A form submit never confirms. Two clients may both request the same open slot; only the first one the admin confirms wins, and the second confirmation is refused by the conflict check.</p>
+<h3>Diagram 2: administrator authentication</h3>
+<div class="diagram"><pre class="mermaid">
+flowchart TD
+  S(["Open /admin"]) --> H{"Valid session cookie?"}
+  H -- "No" --> LG["Show /admin/login"]
+  LG --> SB["Submit email and password"]
+  SB --> VA{"Fields valid?"}
+  VA -- "No" --> LG
+  VA -- "Yes" --> SA["Supabase signInWithPassword"]
+  SA --> OKA{"Credentials correct?"}
+  OKA -- "No" --> GE["Generic error, rate limited"] --> LG
+  OKA -- "Yes" --> IA{"User id in admin_users?"}
+  H -- "Yes" --> IA
+  IA -- "No" --> UN["Sign out, show unauthorized page 403"]
+  IA -- "Yes" --> DB["Dashboard; every action rechecks admin server side and via RLS"]
+  DB --> LO["Log out: clear session"] --> LG
+</pre></div>
+<h3>Diagram 3: portfolio management</h3>
+<div class="diagram"><pre class="mermaid">
+flowchart TD
+  S(["Admin opens Portfolio"]) --> CC["Create or pick category"]
+  CC --> GP["Create project draft: title, category, description"]
+  GP --> UP["Select images"]
+  UP --> VF{"Type jpg/png/webp/avif and size within limit?"}
+  VF -- "No" --> ER["Reject file with reason"] --> UP
+  VF -- "Yes" --> SG["Server signs upload parameters"]
+  SG --> CU["Browser uploads to Cloudinary"]
+  CU --> UOK{"Upload ok?"}
+  UOK -- "No" --> RT["Show failed file, allow retry; nothing written to DB"]
+  UOK -- "Yes" --> MD["Server action saves public ID, size, alt text"]
+  MD --> MOK{"DB insert ok?"}
+  MOK -- "No" --> CLN["Delete the just-uploaded Cloudinary file; report error"]
+  MOK -- "Yes" --> ED["Set cover, captions, alt text, reorder"]
+  ED --> PB{"Publish?"}
+  PB -- "Yes" --> PUBL["is_published = true; page revalidated"]
+  PB -- "No" --> DR["Stays draft"]
+  PUBL --> DL["Later: delete image"]
+  DR --> DL
+  DL --> D1["Delete DB row first"]
+  D1 --> D2{"Cloudinary delete ok?"}
+  D2 -- "No" --> D3["Log orphan public ID for cleanup job"]
+  D2 -- "Yes" --> D4(["Done"])
+  D3 --> D4
+</pre></div>
+<p>Consistency rule: upload first, then DB insert, and clean up on failure. For deletion, DB first, then Cloudinary; a leftover Cloudinary file is harmless and can be cleaned later, while a DB row pointing to a missing image would break a public page.</p>
+<h3>Diagram 4: booking and schedule management</h3>
+<div class="diagram"><pre class="mermaid">
+flowchart TD
+  S(["Admin opens Bookings"]) --> FL["Filter by status, search, sort"]
+  FL --> OP["Open booking detail"]
+  OP --> ACT{"Action"}
+  ACT -- "Change status" --> TR{"Transition allowed?"}
+  TR -- "No" --> BL["Blocked with message"]
+  TR -- "Yes" --> CN{"Becoming confirmed?"}
+  CN -- "Yes" --> CK{"Conflict with confirmed booking or block?"}
+  CK -- "Yes" --> CE["Refuse and show conflicting item"]
+  CK -- "No" --> UPD["Update status, write history"]
+  CN -- "No" --> UPD
+  ACT -- "Edit notes or details" --> SV["Save; time change reruns conflict check"]
+  S --> NB["+ New booking"]
+  NB --> MF["Enter client, source, package, date/time, price"]
+  MF --> MC{"Conflict?"}
+  MC -- "Yes" --> CE
+  MC -- "No" --> MI["Insert as confirmed, source messenger or phone"]
+  S --> BK["Block dates"]
+  BK --> BC{"Overlaps a confirmed booking?"}
+  BC -- "Yes" --> CE
+  BC -- "No" --> BI["Insert block; public calendar updates"]
+  UPD --> SC(["Schedule updated"])
+  MI --> SC
+  BI --> SC
+</pre></div>
+
+<h2 id="s9">9. Booking lifecycle, pricing and double-booking prevention</h2>
+<h3>Lifecycle</h3>
+<div class="diagram"><pre class="mermaid">
+stateDiagram-v2
+  [*] --> inquiry: contact form, no date
+  [*] --> pending_confirmation: website request
+  [*] --> confirmed: admin manual booking
+  inquiry --> pending_confirmation
+  inquiry --> rejected
+  inquiry --> cancelled
+  pending_confirmation --> confirmed
+  pending_confirmation --> rejected
+  pending_confirmation --> cancelled
+  confirmed --> completed
+  confirmed --> cancelled
+  rejected --> [*]
+  cancelled --> [*]
+  completed --> [*]
+</pre></div>
+<div class="tw"><table>
+<thead><tr><th>Status</th><th>Occupies the date?</th><th>Set by</th></tr></thead><tbody>
+<tr><td>inquiry</td><td>No</td><td>Public form</td></tr>
+<tr><td>pending_confirmation</td><td>No (soft; admin sees overlap warnings)</td><td>Public booking function</td></tr>
+<tr><td>confirmed</td><td><b>Yes</b></td><td>Admin only</td></tr>
+<tr><td>completed</td><td>Yes (history; past date)</td><td>Admin only</td></tr>
+<tr><td>rejected, cancelled</td><td>No</td><td>Admin only</td></tr>
+</tbody></table></div>
+<p>Public users can never change status. Status changes go through one SQL function that checks <code>is_admin()</code> and the allowed-transition table.</p>
+<h3>Pricing rule (updated with your confirmed prices)</h3>
+<div class="tw"><table><thead><tr><th>Package</th><th>Hours covered</th><th>Price (PHP)</th></tr></thead><tbody><tr><td>Basic</td><td>1 to 2</td><td>8,000</td></tr><tr><td>Standard</td><td>3 to 4</td><td>14,000</td></tr><tr><td>Premium</td><td>6 to 8</td><td>24,000</td></tr></tbody></table></div>
+<p>Each package is a <b>flat price for an hour range</b> (<code>min_hours</code>, <code>max_hours</code>), so the table stores both instead of one base-hours value. Hours outside a range (for example 5 hours, or more than 8) are a <b>custom quote</b>: the request is accepted with no total, and you set the price when you review it. Add-ons and an extra-hour rate stay empty until you send those prices.</p>
+<pre class="code">if requested_hours within package.min_hours..max_hours:
+    total = package.price + sum(addon prices)
+else:
+    total = null  (custom quote, set by admin)</pre>
+<p>The same formula lives in one place: a Postgres function that reads current rows and returns an itemised breakdown. The calculator calls it for previews; the booking function calls it for the stored total. The browser's number is never used.</p>
+<h3>Preventing double booking</h3>
+<ol>
+<li><b>Occupancy range:</b> <code>tstzrange(starts_at - buffer, ends_at + buffer)</code>, buffer from settings.</li>
+<li><b>Transaction lock:</b> booking and status functions take <code>pg_advisory_xact_lock</code> on a fixed key, so two simultaneous requests are processed one at a time. This single lock covers both tables (bookings and blocks), which a plain constraint cannot do across tables.</li>
+<li><b>Check inside the lock:</b> look for overlapping rows in confirmed bookings and availability_blocks; refuse if any.</li>
+<li><b>Safety net:</b> a <code>GIST</code> exclusion constraint on bookings, active only where status is <code>confirmed</code>, so even a buggy code path cannot create two overlapping confirmed rows.</li>
+<li><b>Public calendar:</b> a function returns only busy time ranges, with no names or contact data.</li>
+<li><b>Time zones:</b> everything stored as <code>timestamptz</code>; interpreted in Asia/Manila; date-only UI converts using that zone.</li>
+</ol>
+<p><b>Policy for pending requests:</b> several clients may request the same open slot. The admin sees them flagged as overlapping and confirms one; confirming runs the lock-and-check above, so the others can only be rejected. This keeps the public calendar honest without letting strangers block your dates with unconfirmed requests.</p>
+
+<h2 id="s10">10. Security plan</h2>
+<div class="grid2">
+<div><h3>Authorization model</h3><p>A protected <code>admin_users</code> table plus a <code>SECURITY DEFINER</code> function <code>is_admin()</code> with a fixed <code>search_path</code>. Policies call it, which avoids recursive policies. JWT custom claims were considered; they are fast but stay valid until the token expires, so revoking an admin is slower. With one or two admins, the table is simpler and revokes instantly.</p></div>
+<div><h3>First admin</h3><p>Create the user in Supabase dashboard (Authentication, Users), with public sign-ups turned off. Then run one SQL insert in the SQL editor adding that user's id to <code>admin_users</code>. No app code can do this, and no policy lets a user insert themselves.</p></div>
+<div><h3>RLS access matrix</h3><p>Anon: select published categories, projects, images, active packages and add-ons, published testimonials, public settings. Nothing on bookings, blocks, history or admin_users. Admin: full access to everything through <code>is_admin()</code>. Booking creation: only through a function; direct insert on bookings is not granted to anon.</p></div>
+<div><h3>Public booking endpoint</h3><p>Server Action validates with Zod, rate-limits by IP, includes a honeypot field (Cloudflare Turnstile is an option if spam appears), then calls the function with the server-only key. Execute on that function is revoked from anon and authenticated roles.</p></div>
+<div><h3>Uploads</h3><p>Admin-only signed upload; allowed formats and a size cap enforced in the signature parameters and re-checked after upload; Cloudinary secret server side only.</p></div>
+<div><h3>Other controls</h3><p>Security headers via <code>next.config</code>; cookies httpOnly through <code>@supabase/ssr</code>; generic login errors; no service-role import in client files (enforced with the <code>server-only</code> package); dependency audit before launch.</p></div>
+</div>
+<p><b>RLS testing:</b> three sessions in the test suite: no login, a logged-in user not in admin_users, and an admin. Each runs a list of reads and writes with expected pass or fail. Nothing is declared secure until those tests run.</p>
+
+<h2 id="s11">11. Implementation roadmap</h2>
+<div class="tw"><table>
+<thead><tr><th>Phase</th><th>Contents</th><th>You verify</th></tr></thead><tbody>
+<tr><td>A Foundation</td><td>Install tools; adopt scaffold; fix tokens, fonts, loader; folder structure; ESLint/Prettier; Git and GitHub</td><td><code>npm run dev</code> shows the page; first commit on GitHub</td></tr>
+<tr><td>B Data and auth</td><td>Migrations (tables, constraints, functions, RLS); Supabase project; first admin; generated types; RLS tests</td><td>Test checklist passes for all three sessions</td></tr>
+<tr><td>C Public site</td><td>Homepage chapters, portfolio, pricing and calculator, contact</td><td>Pages render from database data</td></tr>
+<tr><td>D Booking</td><td>Availability, pricing function, submission, conflict prevention, feedback</td><td>Two simultaneous requests test</td></tr>
+<tr><td>E Admin</td><td>Login, category/project CRUD, uploads, packages, bookings, schedule, manual booking, settings</td><td>Manual walkthrough of each admin task</td></tr>
+<tr><td>F Launch</td><td>Vitest, Playwright, accessibility and performance pass, SEO, Vercel deploy, production auth URLs</td><td>Live end-to-end booking test</td></tr>
+</tbody></table></div>
+<p>Each phase is delivered as small files with their full path, what they do, the command to run, and the expected result. I will stop after each phase for your check.</p>
+
+<h2 id="s12">12. Manual setup checklist</h2>
+<p>Detailed click-by-click steps arrive with the phase that needs them. Order and purpose:</p>
+<div class="tw"><table>
+<thead><tr><th>#</th><th>Task</th><th>Type</th><th>Needed by</th></tr></thead><tbody>
+<tr><td>1</td><td>Install Node.js (LTS), Git, VS Code</td><td>Install</td><td>A</td></tr>
+<tr><td>2</td><td>Create GitHub account and empty repository</td><td>Dashboard</td><td>A</td></tr>
+<tr><td>3</td><td>Create Supabase account and project; turn off public sign-ups</td><td>Dashboard</td><td>B</td></tr>
+<tr><td>4</td><td>Create Cloudinary account; note cloud name; create API key</td><td>Dashboard</td><td>C/E</td></tr>
+<tr><td>5</td><td>Create <code>.env.local</code> from <code>.env.example</code> (values never pasted to me)</td><td>File</td><td>B</td></tr>
+<tr><td>6</td><td>Create first admin user and run the one-line SQL to authorise</td><td>Dashboard + SQL</td><td>B</td></tr>
+<tr><td>7</td><td>Gather real content: logo SVG, photos by category, portrait, hero media, prices, turnaround, Messenger link, email, socials, service area</td><td>Content</td><td>C</td></tr>
+<tr><td>8</td><td>Create Vercel account, import repository, add environment variables</td><td>Dashboard</td><td>F</td></tr>
+<tr><td>9</td><td>Add production URL to Supabase redirect settings</td><td>Dashboard</td><td>F</td></tr>
+<tr><td>10</td><td>Buy or point domain (document mentions everframe.ph)</td><td>Dashboard</td><td>F</td></tr>
+</tbody></table></div>
+
+<h2 id="s13">13. Launch acceptance criteria</h2>
+<ul>
+<li>Every Must requirement in section 2 has a passing test or a recorded manual check.</li>
+<li>RLS tests pass for anonymous, non-admin and admin sessions, including: no read of bookings, no status update, no self-promotion to admin.</li>
+<li>Two simultaneous requests for the same slot cannot produce two confirmed bookings (automated test).</li>
+<li>Tampered price in a booking request is ignored (test).</li>
+<li>A manual booking and a block both make the date unavailable on the public page.</li>
+<li>Invalid upload rejected; failed upload leaves no orphan DB row.</li>
+<li>No secret appears in the browser bundle (checked by search of the build output).</li>
+<li>Keyboard-only run of home, portfolio, lightbox, pricing and booking succeeds; reduced motion respected.</li>
+<li>Mobile Lighthouse run recorded for home and portfolio against NF-05 targets.</li>
+<li>No placeholder prices, fake numbers or sample contact details remain; production booking tested live.</li>
+</ul>
+
+<h2 id="s14">14. Decisions that need you</h2>
+<div class="callout"><b>Answered on 2026-10-16.</b> Pending requests do not hold dates. One photographer, one event at a time. Photography and videography both offered. Prices: Basic 1-2 hrs 8,000; Standard 3-4 hrs 14,000; Premium 6-8 hrs 24,000 (PHP). Loader about 3 seconds. Sanity dropped and Booking in the nav went ahead as recommended. Still open: video pricing (is video a separate service, a package add-on, or a separate set of packages?), add-ons, custom-hour rates, turnaround.</div>
+<p><b>Original questions, kept for the record:</b></p>
+<ol class="dec">
+<li><b>Pending requests and the calendar.</b> Recommended: pending requests do <i>not</i> block the date; only confirmed bookings and blocks do. Alternative: a pending request holds the date for a set time (for example 48 hours). Which?</li>
+<li><b>Sanity.</b> Your document planned it. I recommend dropping it (portfolio managed in your own admin). OK?</li>
+<li><b>Booking in the top nav.</b> Recommended: yes, as a persistent item next to Portfolio and Pricing, which is also what the scaffold nav shows. OK?</li>
+<li><b>Capacity.</b> Is it one photographer and one event at a time? If you have a team that can shoot two events at once, the schema needs a photographer dimension now.</li>
+<li><b>Photography only, or video too?</b> Your document describes photography; the scaffold hero says "photography and videography".</li>
+<li><b>Pricing facts.</b> Package prices, hours included, extra-hour rate and add-ons, and turnaround. Send when ready; placeholders are used until then. Is the price the same for every event type, or does it differ by category?</li>
+<li><b>Loader length.</b> Shorten the 8 second minimum to about 2 seconds, once per session. OK?</li>
+</ol>
+<p>Items I decided on my own, with reasons above: Lenis skipped, <code>yet-another-react-lightbox</code>, no BlurHash, no automatic emails or online payment in v1, buffer default 60 minutes, Asia/Manila and PHP.</p>
+<footer>Package versions checked against the registry on 2026-10-16: Next 16.4.2, React 19.3.1, Framer Motion 14.3.0, supabase-js 2.118.0, @supabase/ssr 0.12.7, Zod 4.6.7, Tailwind 4.3.3, yet-another-react-lightbox 3.32.2. Final pins are chosen in Phase A and tested together.</footer>
+</main>
+</div>
