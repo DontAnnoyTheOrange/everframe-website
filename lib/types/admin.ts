@@ -12,6 +12,9 @@ export type BookingRow = {
   client_phone: string | null;
   client_messenger: string | null;
   venue: string | null;
+  venue_place_id: string | null;
+  venue_lat: number | null;
+  venue_lng: number | null;
   client_message: string | null;
   internal_notes: string | null;
   starts_at: string | null;

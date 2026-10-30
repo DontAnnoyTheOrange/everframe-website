@@ -97,6 +97,7 @@ export default async function BookingPage({
         outsideBase={outsideBase}
         turnaround={catalog.turnaround[pkg.service_type]}
         changeHref={changeHref}
+        mapsKey={process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY?.trim() || null}
       />
     </Shell>
   );

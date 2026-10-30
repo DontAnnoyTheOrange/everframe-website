@@ -8,7 +8,13 @@ import {
   type BookingResult,
 } from "@/app/(public)/booking/actions";
 import BookingCalendar from "@/components/booking/BookingCalendar";
-import { BOOKING_MAX_DAYS_AHEAD } from "@/lib/booking/bookingSchema";
+import VenueInput from "@/components/booking/VenueInput";
+import {
+  BOOKING_MAX_DAYS_AHEAD,
+  bookingInputSchema,
+  fieldErrors,
+} from "@/lib/booking/bookingSchema";
+import { EMPTY_VENUE, type VenueValue } from "@/lib/booking/venue";
 import { OTHER_LABEL_MAX, validateOtherLabel } from "@/lib/booking/eventType";
 import { MESSENGER_MAX, parseMessengerLink } from "@/lib/booking/messenger";
 import {
@@ -36,6 +42,7 @@ type Props = {
   outsideBase: boolean;
   turnaround: string;
   changeHref: string; // link back to the pricing page
+  mapsKey: string | null; // browser Geoapify key, or null when map search is off
 };
 
 const field =
@@ -55,7 +62,7 @@ export default function BookingForm(p: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [messenger, setMessenger] = useState("");
-  const [venue, setVenue] = useState("");
+  const [venue, setVenue] = useState<VenueValue>(EMPTY_VENUE);
   const [message, setMessage] = useState("");
   const [website, setWebsite] = useState(""); // bot trap
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -105,27 +112,60 @@ export default function BookingForm(p: Props) {
     }
     const link = parseMessengerLink(messenger);
     if (!link.ok) found.messenger = link.message;
+    // Same rules the server uses: email, mobile and venue are required.
+    const payload = {
+      packageId: p.pkg.id,
+      hours: p.hours,
+      addonIds: p.addonIds,
+      outsideBase: p.outsideBase,
+      categoryId,
+      eventTypeOther: isOther ? other : "",
+      date,
+      time,
+      name,
+      email,
+      phone,
+      messenger,
+      venue,
+      message,
+      website,
+    };
+    const checked = bookingInputSchema.safeParse(payload);
+    if (!checked.success) {
+      for (const [k, msg] of Object.entries(fieldErrors(checked.error))) {
+        if (!(k in found)) found[k] = msg;
+      }
+    }
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) {
+      const first = [
+        "date",
+        "time",
+        "eventTypeOther",
+        "name",
+        "messenger",
+        "email",
+        "phone",
+        "venue",
+      ].find((k) => found[k]);
+      if (first) {
+        const target: Record<string, string> = {
+          date: "form-status",
+          time: "start-time",
+          eventTypeOther: "event-type-other",
+          name: "client-name",
+          messenger: "client-messenger",
+          email: "client-email",
+          phone: "client-phone",
+          venue: "client-venue",
+        };
+        document.getElementById(target[first])?.focus();
+      }
+      return;
+    }
 
     startTransition(async () => {
-      const res = await submitBooking({
-        packageId: p.pkg.id,
-        hours: p.hours,
-        addonIds: p.addonIds,
-        outsideBase: p.outsideBase,
-        categoryId,
-        eventTypeOther: isOther ? other : "",
-        date,
-        time,
-        name,
-        email,
-        phone,
-        messenger,
-        venue,
-        message,
-        website,
-      });
+      const res = await submitBooking(payload);
       setResult(res);
       if (!res.ok) {
         setErrors(res.fields ?? {});
@@ -367,14 +407,18 @@ export default function BookingForm(p: Props) {
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="client-email" className={label}>
-                Email (optional)
+                Email
               </label>
               <input
                 id="client-email"
                 type="email"
                 autoComplete="email"
+                required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrors((x) => ({ ...x, email: "" }));
+                }}
                 aria-invalid={errors.email ? true : undefined}
                 maxLength={254}
                 className={field}
@@ -383,14 +427,18 @@ export default function BookingForm(p: Props) {
             </div>
             <div>
               <label htmlFor="client-phone" className={label}>
-                Mobile number (optional)
+                Mobile number
               </label>
               <input
                 id="client-phone"
                 type="tel"
                 autoComplete="tel"
+                required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setErrors((x) => ({ ...x, phone: "" }));
+                }}
                 aria-invalid={errors.phone ? true : undefined}
                 placeholder="0917 123 4567"
                 maxLength={30}
@@ -401,15 +449,19 @@ export default function BookingForm(p: Props) {
           </div>
           <div>
             <label htmlFor="client-venue" className={label}>
-              Venue or address (optional)
+              Venue
             </label>
-            <input
+            <VenueInput
               id="client-venue"
               value={venue}
-              onChange={(e) => setVenue(e.target.value)}
-              maxLength={300}
-              className={field}
+              onChange={(v) => {
+                setVenue(v);
+                setErrors((x) => ({ ...x, venue: "" }));
+              }}
+              mapsKey={p.mapsKey}
+              invalid={!!errors.venue}
             />
+            {errors.venue && <Err>{errors.venue}</Err>}
           </div>
           <div>
             <label htmlFor="client-message" className={label}>
@@ -463,6 +515,9 @@ export default function BookingForm(p: Props) {
           <p className="text-mute text-sm">
             When: {date}, {timeLabel(time)}
           </p>
+        )}
+        {venue.text.trim() && (
+          <p className="text-mute text-sm">Venue: {venue.text.trim()}</p>
         )}
 
         <dl className="mt-6 flex flex-col gap-3 text-sm">

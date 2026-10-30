@@ -21,6 +21,8 @@ import {
 import { messengerHref, parseMessengerLink } from "../../lib/booking/messenger";
 import { createLimiter } from "../../lib/booking/rateLimit";
 import { resolveSelection } from "../../lib/booking/selection";
+import { buildVenueText, mapsLinks } from "../../lib/booking/venue";
+import { parsePlaces } from "../../lib/maps/geoapify";
 import { PACKAGES } from "./fixtures";
 
 const UUID = "123e4567-e89b-42d3-a456-426614174000";
@@ -35,9 +37,15 @@ const valid = {
   time: "09:00",
   name: "Maria Santos",
   email: "maria@example.com",
-  phone: "",
+  phone: "0917 123 4567",
   messenger: "https://m.me/maria.santos",
-  venue: "",
+  venue: {
+    text: "Casa Real, Tagaytay, Cavite",
+    source: "map" as "map" | "typed" | null,
+    placeId: "ChIJN1t_tDeuEmsRUsoyG83frY4" as string | null,
+    lat: 14.1153 as number | null,
+    lng: 120.9621 as number | null,
+  },
   message: "",
   website: "",
 };
@@ -128,17 +136,17 @@ describe("booking form rules", () => {
     });
     expect(nameOnly.success).toBe(false);
   });
-  it("email and mobile are optional once a Messenger link is given", () => {
-    expect(
-      bookingInputSchema.safeParse({ ...valid, email: "", phone: "" }).success,
-    ).toBe(true);
-    expect(
-      bookingInputSchema.safeParse({
-        ...valid,
-        email: "",
-        phone: "0917 123 4567",
-      }).success,
-    ).toBe(true);
+  it("requires email, mobile number and venue", () => {
+    const err = (patch: object) => {
+      const r = bookingInputSchema.safeParse({ ...valid, ...patch });
+      return r.success ? {} : fieldErrors(r.error);
+    };
+    expect(err({ email: "" }).email).toMatch(/email/i);
+    expect(err({ phone: "" }).phone).toMatch(/mobile/i);
+    expect(err({ venue: { ...valid.venue, text: "" } }).venue).toBeTruthy();
+    expect(err({ venue: { ...valid.venue, source: null } }).venue).toMatch(
+      /choose/i,
+    );
   });
   it("rejects a bad email, bad phone, bad date and bad time", () => {
     const bad = (patch: object) =>
@@ -310,5 +318,100 @@ describe("Messenger links", () => {
     expect(messengerHref("Maria from Facebook")).toBeNull();
     expect(messengerHref("javascript:alert(1)")).toBeNull();
     expect(messengerHref(null)).toBeNull();
+  });
+});
+
+describe("venue", () => {
+  const typed = {
+    text: "Brgy. San Jose, Dasmariñas, Cavite",
+    source: "typed" as const,
+    placeId: null,
+    lat: null,
+    lng: null,
+  };
+  const ok = (venue: object) =>
+    bookingInputSchema.safeParse({ ...valid, venue }).success;
+  it("accepts a map pick and a typed address", () => {
+    expect(bookingInputSchema.safeParse(valid).success).toBe(true);
+    expect(ok(typed)).toBe(true);
+  });
+  it("refuses a map pick with no coordinates or a bad place id", () => {
+    expect(ok({ ...valid.venue, lat: null, lng: null })).toBe(false);
+    expect(ok({ ...valid.venue, lat: 95 })).toBe(false);
+    expect(ok({ ...valid.venue, lng: 200 })).toBe(false);
+    expect(ok({ ...valid.venue, placeId: "x y<script>" })).toBe(false);
+    expect(ok({ ...valid.venue, placeId: null })).toBe(false);
+  });
+  it("refuses a typed address that carries map data, and too short or long text", () => {
+    expect(ok({ ...typed, lat: 14, lng: 120 })).toBe(false);
+    expect(ok({ ...typed, text: "abc" })).toBe(false);
+    expect(ok({ ...typed, text: "x".repeat(201) })).toBe(false);
+  });
+  it("joins place name and address without repeating the name", () => {
+    expect(buildVenueText("Casa Real", "Tagaytay, Cavite")).toBe(
+      "Casa Real, Tagaytay, Cavite",
+    );
+    expect(buildVenueText("Casa Real", "Casa Real, Tagaytay")).toBe(
+      "Casa Real, Tagaytay",
+    );
+    expect(buildVenueText(null, "Tagaytay")).toBe("Tagaytay");
+  });
+  it("builds Google Maps links from numbers and encoded text only", () => {
+    const pinned = mapsLinks({
+      venue: "Casa Real",
+      placeId: "5129a6e4d6f6c52d4059b3a1c0a6e0b82c40f00101",
+      lat: 14.1153,
+      lng: 120.9621,
+    });
+    expect(pinned.pinned).toBe(true);
+    expect(pinned.open).toBe(
+      "https://www.google.com/maps/search/?api=1&query=14.115300%2C120.962100",
+    );
+    expect(pinned.directions).toBe(
+      "https://www.google.com/maps/dir/?api=1&destination=14.115300%2C120.962100",
+    );
+    const text = mapsLinks({
+      venue: 'A&B "hall" #1',
+      placeId: null,
+      lat: null,
+      lng: null,
+    });
+    expect(text.pinned).toBe(false);
+    expect(text.open).toBe(
+      "https://www.google.com/maps/search/?api=1&query=A%26B%20%22hall%22%20%231",
+    );
+    expect(
+      mapsLinks({ venue: null, placeId: null, lat: null, lng: null }).open,
+    ).toBeNull();
+  });
+  it("reads Geoapify results and skips ones it cannot pin exactly", () => {
+    const good = {
+      properties: {
+        place_id: "5129a6e4d6f6c52d4059b3a1c0a6e0b82c40f00101",
+        name: "Casa Real",
+        formatted: "Casa Real, Tagaytay, Cavite, Philippines",
+        address_line2: "Tagaytay, Cavite, Philippines",
+        lat: 14.1153,
+        lon: 120.9621,
+      },
+    };
+    const r = parsePlaces({
+      features: [
+        good,
+        { properties: { ...good.properties, lat: "14" } }, // text, not a number
+        { properties: { ...good.properties, lon: 999 } }, // impossible longitude
+        { properties: { ...good.properties, place_id: "<x>" } }, // odd id
+        { properties: { ...good.properties, formatted: "" } },
+        {},
+      ],
+    });
+    expect(r).toHaveLength(1);
+    expect(r[0]).toMatchObject({
+      main: "Casa Real",
+      lat: 14.1153,
+      lng: 120.9621,
+    });
+    expect(parsePlaces(null)).toEqual([]);
+    expect(parsePlaces({ features: "nope" })).toEqual([]);
   });
 });

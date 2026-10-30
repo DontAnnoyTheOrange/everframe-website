@@ -30,6 +30,10 @@ export type BookingResult =
 // 5 requests per visitor per 10 minutes.
 const limiter = createLimiter(5, 10 * 60 * 1000);
 
+function round6(n: number | null): number | null {
+  return n === null ? null : Math.round(n * 1e6) / 1e6;
+}
+
 async function visitorKey(): Promise<string> {
   const h = await headers();
   const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -104,7 +108,10 @@ export async function submitBooking(raw: unknown): Promise<BookingResult> {
     p_client_email: v.email || null,
     p_client_phone: v.phone ? normalizePhone(v.phone) : null,
     p_client_messenger: messengerUrl,
-    p_venue: v.venue || null,
+    p_venue: v.venue.text,
+    p_venue_place_id: v.venue.source === "map" ? v.venue.placeId : null,
+    p_venue_lat: v.venue.source === "map" ? round6(v.venue.lat) : null,
+    p_venue_lng: v.venue.source === "map" ? round6(v.venue.lng) : null,
     p_message: v.message || null,
     p_outside_base: v.outsideBase,
     p_event_type_other: v.eventTypeOther || null,
@@ -135,6 +142,13 @@ export async function submitBooking(raw: unknown): Promise<BookingResult> {
         ok: false,
         message:
           "That package does not cover this many hours. Please go back and choose the next package.",
+      };
+    }
+    if (m.includes("invalid_venue_location")) {
+      return {
+        ok: false,
+        message: "Please choose your venue again.",
+        fields: { venue: "Please choose your venue again from the list." },
       };
     }
     if (m.includes("date_in_past")) {

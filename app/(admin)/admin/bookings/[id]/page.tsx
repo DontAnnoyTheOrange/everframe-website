@@ -6,6 +6,7 @@ import AdminShell from "@/components/admin/AdminShell";
 import MessengerLink from "@/components/admin/MessengerLink";
 import { NotesForm, StatusActions } from "@/components/admin/BookingActions";
 import StatusBadge from "@/components/admin/StatusBadge";
+import VenueInfo from "@/components/admin/VenueInfo";
 import { requireAdmin } from "@/lib/auth/dal";
 import {
   formatManilaDate,
@@ -132,7 +133,17 @@ export default async function BookingDetailPage({
               label="Hours"
               value={b.duration_hours !== null ? String(b.duration_hours) : "-"}
             />
-            <Row label="Venue" value={b.venue ?? "-"} />
+            <Row
+              label="Venue"
+              value={
+                <VenueInfo
+                  venue={b.venue}
+                  placeId={b.venue_place_id}
+                  lat={b.venue_lat}
+                  lng={b.venue_lng}
+                />
+              }
+            />
           </Card>
 
           <Card title="Client">
