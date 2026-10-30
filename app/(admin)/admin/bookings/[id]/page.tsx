@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import AdminShell from "@/components/admin/AdminShell";
+import MessengerLink from "@/components/admin/MessengerLink";
 import { NotesForm, StatusActions } from "@/components/admin/BookingActions";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { requireAdmin } from "@/lib/auth/dal";
@@ -160,7 +161,10 @@ export default async function BookingDetailPage({
                 )
               }
             />
-            <Row label="Messenger" value={b.client_messenger ?? "-"} />
+            <Row
+              label="Messenger"
+              value={<MessengerLink value={b.client_messenger} />}
+            />
             {b.client_message && (
               <div className="mt-3">
                 <p className="text-xs text-neutral-500 uppercase">

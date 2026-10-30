@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
+import MessengerLink from "@/components/admin/MessengerLink";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { requireAdmin } from "@/lib/auth/dal";
 import { formatManilaRange } from "@/lib/booking/manila";
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 const COLUMNS =
-  "id,reference_code,status,source,client_name,event_type_other,category_id,starts_at,ends_at,duration_hours,package_name_snapshot,total_price,custom_quote,created_at";
+  "id,reference_code,status,source,client_name,client_messenger,event_type_other,category_id,starts_at,ends_at,duration_hours,package_name_snapshot,total_price,custom_quote,created_at";
 
 export default async function BookingsPage({
   searchParams,
@@ -48,6 +49,7 @@ export default async function BookingsPage({
     | "status"
     | "source"
     | "client_name"
+    | "client_messenger"
     | "event_type_other"
     | "category_id"
     | "starts_at"
@@ -140,7 +142,12 @@ export default async function BookingsPage({
                     {SOURCE_LABEL[b.source] ?? b.source}
                   </div>
                 </td>
-                <td className="px-4 py-3">{b.client_name}</td>
+                <td className="px-4 py-3">
+                  {b.client_name}
+                  <div>
+                    <MessengerLink value={b.client_messenger} compact />
+                  </div>
+                </td>
                 <td className="px-4 py-3">
                   {b.event_type_other
                     ? `Others: ${b.event_type_other}`
