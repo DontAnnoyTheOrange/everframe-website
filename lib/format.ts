@@ -17,6 +17,6 @@ export const SERVICE_LABEL: Record<ServiceType, string> = {
 export const SERVICE_ORDER: ServiceType[] = ["photo", "video", "photo_video"];
 
 export function hoursLabel(maxHours: number | null): string {
-  if (maxHours === null) return "Whole event";
+  if (maxHours === null) return "Whole Event";
   return `Up to ${maxHours} ${maxHours === 1 ? "hour" : "hours"}`;
 }

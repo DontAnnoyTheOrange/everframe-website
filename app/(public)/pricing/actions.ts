@@ -25,6 +25,14 @@ export async function getQuote(raw: unknown): Promise<QuoteResult> {
   });
 
   if (error) {
+    // The package does not cover that many hours. The screen normally switches package first.
+    if (error.message.includes("package_hours_exceeded")) {
+      return {
+        ok: false,
+        message:
+          "That package does not cover this many hours. Please choose the next package.",
+      };
+    }
     console.error("quote_booking failed:", error.message);
     return {
       ok: false,

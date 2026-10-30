@@ -20,7 +20,7 @@ export async function getCatalog(): Promise<Catalog | null> {
     db
       .from("packages")
       .select(
-        "id,slug,service_type,name,price,max_hours,extra_hour_rate,inclusions,sort_order",
+        "id,slug,service_type,name,price,max_hours,extra_hour_rate,upgrade_above_hours,inclusions,sort_order",
       )
       .eq("is_active", true)
       .order("sort_order"),
@@ -32,7 +32,7 @@ export async function getCatalog(): Promise<Catalog | null> {
     db.from("package_included_addons").select("package_id,addon_id"),
     db
       .from("event_categories")
-      .select("id,slug,name,short_story,sort_order")
+      .select("id,slug,name,short_story,sort_order,is_other")
       .eq("is_published", true)
       .order("sort_order"),
     db

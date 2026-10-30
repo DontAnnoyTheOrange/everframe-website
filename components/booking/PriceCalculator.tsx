@@ -9,6 +9,13 @@ import {
   formatPeso,
   hoursLabel,
 } from "@/lib/format";
+import {
+  coverageLabel,
+  limitNote,
+  resolvePackage,
+  tiersFor,
+} from "@/lib/pricing/packageRules";
+import { OTHER_LABEL_MAX, validateOtherLabel } from "@/lib/booking/eventType";
 import type { Catalog, PackageRow, ServiceType } from "@/lib/types/db";
 
 const MAX_HOURS = 12;
@@ -28,14 +35,28 @@ export default function PriceCalculator({
     packages.find((p) => p.slug === initialPackageSlug) ?? packages[0];
 
   const [service, setService] = useState<ServiceType>(initial.service_type);
-  const [packageId, setPackageId] = useState(initial.id);
+  // The package the customer clicked. The package in force (`pkg`) can be a higher tier
+  // when the hours go past what the clicked one covers. See lib/pricing/packageRules.ts.
+  const [chosenId, setChosenId] = useState(initial.id);
   const [hours, setHours] = useState(defaultHours(initial));
   const [categorySlug, setCategorySlug] = useState(categories[0]?.slug ?? "");
+  const [otherText, setOtherText] = useState("");
+  const [otherTouched, setOtherTouched] = useState(false);
   const [addonIds, setAddonIds] = useState<string[]>([]);
   const [outsideBase, setOutsideBase] = useState(false);
 
-  const tiers = packages.filter((p) => p.service_type === service);
-  const pkg = packages.find((p) => p.id === packageId) ?? tiers[0];
+  const tiers = tiersFor(packages, service);
+  const chosen = tiers.find((p) => p.id === chosenId) ?? tiers[0];
+  const pkg = resolvePackage(tiers, chosen.id, hours);
+  const nextTier = tiers[tiers.indexOf(pkg) + 1];
+  const autoSwitched = pkg.id !== chosen.id;
+
+  const category = categories.find((c) => c.slug === categorySlug);
+  const isOther = category?.is_other === true;
+  const otherCheck = isOther ? validateOtherLabel(otherText) : null;
+  const otherError =
+    otherCheck && !otherCheck.ok && otherTouched ? otherCheck.message : null;
+  const canProceed = !otherCheck || otherCheck.ok;
   const includedIds = new Set(
     includedAddons
       .filter((i) => i.package_id === pkg.id)
@@ -49,8 +70,14 @@ export default function PriceCalculator({
     choosePackage(first);
   }
   function choosePackage(p: PackageRow) {
-    setPackageId(p.id);
-    setHours(defaultHours(p));
+    setChosenId(p.id);
+    // Clicking the package that is already in force keeps the hours the customer set.
+    if (p.id !== pkg.id) setHours(defaultHours(p));
+  }
+  function chooseCategory(slug: string) {
+    setCategorySlug(slug);
+    setOtherText(""); // switching away from "Others" clears what was typed
+    setOtherTouched(false);
   }
   function toggleAddon(id: string) {
     setAddonIds((cur) =>
@@ -90,6 +117,7 @@ export default function PriceCalculator({
   const bookingHref = (() => {
     const q = new URLSearchParams({ package: pkg.slug, hours: String(hours) });
     if (categorySlug) q.set("category", categorySlug);
+    if (otherCheck?.ok) q.set("other", otherCheck.value);
     if (addonIds.length) q.set("addons", addonIds.join(","));
     if (outsideBase) q.set("outside", "1");
     return `/booking?${q.toString()}`;
@@ -133,6 +161,7 @@ export default function PriceCalculator({
                     ? "border-brass bg-ink-2"
                     : "border-line hover:border-mute"
                 }`}
+                data-active={p.id === pkg.id}
               >
                 <input
                   type="radio"
@@ -174,7 +203,7 @@ export default function PriceCalculator({
             <select
               id="event-type"
               value={categorySlug}
-              onChange={(e) => setCategorySlug(e.target.value)}
+              onChange={(e) => chooseCategory(e.target.value)}
               className="border-line bg-ink-2 text-bone w-full rounded-md border px-3 py-2"
             >
               {categories.map((c) => (
@@ -183,6 +212,40 @@ export default function PriceCalculator({
                 </option>
               ))}
             </select>
+            {isOther && (
+              <div className="mt-4">
+                <label
+                  htmlFor="event-type-other"
+                  className="text-stone mb-2 block text-sm"
+                >
+                  Please specify your event type
+                </label>
+                <input
+                  id="event-type-other"
+                  type="text"
+                  required
+                  maxLength={OTHER_LABEL_MAX}
+                  value={otherText}
+                  onChange={(e) => setOtherText(e.target.value)}
+                  onBlur={() => setOtherTouched(true)}
+                  aria-invalid={otherError ? true : undefined}
+                  aria-describedby={
+                    otherError ? "event-type-other-error" : undefined
+                  }
+                  placeholder="e.g. Baby shower, reunion"
+                  className="border-line bg-ink-2 text-bone placeholder:text-mute w-full rounded-md border px-3 py-2"
+                />
+                {otherError && (
+                  <p
+                    id="event-type-other-error"
+                    role="alert"
+                    className="mt-2 text-sm text-[#E8806A]"
+                  >
+                    {otherError}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
           <div>
             <span
@@ -207,9 +270,9 @@ export default function PriceCalculator({
               </button>
               <output
                 aria-live="polite"
-                className="text-bone min-w-24 text-center"
+                className="text-bone min-w-28 text-center"
               >
-                {hours} {hours === 1 ? "hour" : "hours"}
+                {coverageLabel(pkg, hours)}
               </output>
               <button
                 type="button"
@@ -221,13 +284,25 @@ export default function PriceCalculator({
                 +
               </button>
             </div>
-            <p className="text-mute mt-2 text-xs">
-              {pkg.max_hours === null
-                ? "Whole-event package: the price is the same for any length."
-                : pkg.extra_hour_rate !== null
-                  ? `Each hour beyond ${pkg.max_hours} adds ${formatPeso(pkg.extra_hour_rate)}.`
-                  : `Hours beyond ${pkg.max_hours} are quoted separately.`}
-            </p>
+            {pkg.max_hours === null && (
+              <p className="text-stone mt-2 text-xs">
+                About {hours} {hours === 1 ? "hour" : "hours"} for scheduling
+              </p>
+            )}
+            {autoSwitched && (
+              <p
+                role="status"
+                className="border-brass text-bone mt-3 border-l-2 pl-3 text-sm"
+              >
+                Switched to {pkg.name}: {hours} hours is more than {chosen.name}{" "}
+                covers
+                {chosen.upgrade_above_hours !== null
+                  ? ` (up to ${chosen.upgrade_above_hours} hours)`
+                  : ""}
+                .
+              </p>
+            )}
+            <p className="text-mute mt-2 text-xs">{limitNote(pkg, nextTier)}</p>
           </div>
         </div>
 
@@ -280,9 +355,16 @@ export default function PriceCalculator({
       >
         <h2 className="text-bone font-serif text-2xl">Your estimate</h2>
         <p className="text-mute mt-1 text-sm">
-          {SERVICE_LABEL[pkg.service_type]} · {pkg.name} · {hours}{" "}
-          {hours === 1 ? "hour" : "hours"}
+          {SERVICE_LABEL[pkg.service_type]} · {pkg.name} ·{" "}
+          {coverageLabel(pkg, hours)}
         </p>
+        {category && (
+          <p className="text-mute text-sm">
+            {isOther
+              ? `Event: Others${otherCheck?.ok ? ` (${otherCheck.value})` : ""}`
+              : `Event: ${category.name}`}
+          </p>
+        )}
 
         <dl
           className={`mt-6 flex flex-col gap-3 text-sm transition-opacity ${loading ? "opacity-50" : ""}`}
@@ -338,12 +420,31 @@ export default function PriceCalculator({
         </p>
 
         <div className="mt-6 flex flex-col gap-3">
-          <Link
-            href={bookingHref}
-            className="bg-brass text-brass-ink rounded-md px-5 py-3 text-center text-sm font-medium"
-          >
-            Proceed to booking
-          </Link>
+          {canProceed ? (
+            <Link
+              href={bookingHref}
+              className="bg-brass text-brass-ink rounded-md px-5 py-3 text-center text-sm font-medium"
+            >
+              Proceed to booking
+            </Link>
+          ) : (
+            <>
+              <button
+                type="button"
+                aria-disabled="true"
+                onClick={() => {
+                  setOtherTouched(true);
+                  document.getElementById("event-type-other")?.focus();
+                }}
+                className="bg-brass text-brass-ink rounded-md px-5 py-3 text-center text-sm font-medium opacity-60"
+              >
+                Proceed to booking
+              </button>
+              <p className="text-stone text-xs">
+                Please tell us your event type first.
+              </p>
+            </>
+          )}
         </div>
       </aside>
     </div>

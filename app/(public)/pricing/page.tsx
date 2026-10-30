@@ -40,7 +40,8 @@ export default async function PricingPage({
           {process.env.NODE_ENV === "development" && (
             <p className="text-mute mt-4 text-sm">
               Developer note: Supabase is not connected or returned no packages.
-              Check .env.local and that the four migration files were run.
+              Check .env.local and that all five migration files (001 to 005)
+              were run.
             </p>
           )}
         </div>

@@ -10,6 +10,8 @@ export type PackageRow = {
   price: number;
   max_hours: number | null; // null = whole event
   extra_hour_rate: number | null;
+  // Longest booking this package accepts; longer moves to the next tier. null = no limit.
+  upgrade_above_hours: number | null;
   inclusions: string[];
   sort_order: number;
 };
@@ -28,6 +30,7 @@ export type CategoryRow = {
   name: string;
   short_story: string | null;
   sort_order: number;
+  is_other: boolean; // the "Others" type: the customer types their own label
 };
 
 export type QuoteAddonLine = {
@@ -47,6 +50,7 @@ export type Quote = {
   service_type: ServiceType;
   hours: number;
   max_hours: number | null;
+  upgrade_above_hours: number | null;
   base_price: number;
   extra_hours: number;
   extra_hours_fee: number;
