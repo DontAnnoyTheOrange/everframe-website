@@ -74,7 +74,15 @@ export default async function BookingsPage({
 
   return (
     <AdminShell name={displayName} current="bookings">
-      <h1 className="text-2xl font-semibold">Bookings</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Bookings</h1>
+        <Link
+          href="/admin/bookings/new"
+          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white"
+        >
+          + New booking
+        </Link>
+      </div>
 
       <nav aria-label="Filter bookings" className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (

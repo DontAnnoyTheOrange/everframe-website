@@ -8,7 +8,7 @@ export default function AdminShell({
   children,
 }: {
   name: string;
-  current: "dashboard" | "bookings";
+  current: "dashboard" | "bookings" | "schedule" | "portfolio";
   children: React.ReactNode;
 }) {
   const link = (active: boolean) =>
@@ -30,6 +30,18 @@ export default function AdminShell({
               className={link(current === "bookings")}
             >
               Bookings
+            </Link>
+            <Link
+              href="/admin/schedule"
+              className={link(current === "schedule")}
+            >
+              Schedule
+            </Link>
+            <Link
+              href="/admin/portfolio"
+              className={link(current === "portfolio")}
+            >
+              Portfolio
             </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm text-neutral-600">
