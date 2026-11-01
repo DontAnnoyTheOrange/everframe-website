@@ -27,7 +27,9 @@ export type ProjectDefaults = {
   categoryId: string;
   description: string;
   shootDate: string;
+  videoUrl: string;
   isPublished: boolean;
+  isFeatured: boolean;
 };
 
 // Title, category, description and whether the project is visible on the public site.
@@ -51,7 +53,9 @@ export default function ProjectForm({
     newCategory: "",
     description: initial.description,
     shootDate: initial.shootDate,
+    videoUrl: initial.videoUrl,
     isPublished: initial.isPublished ? "on" : "",
+    isFeatured: initial.isFeatured ? "on" : "",
   };
   const category = picked ?? (v.categoryId || categories[0]?.id || "");
   const f = state.fields ?? {};
@@ -172,6 +176,24 @@ export default function ProjectForm({
         />
         <Err text={f.description} />
       </div>
+      <div>
+        <label htmlFor="p-video" className={lab}>
+          Video link (optional)
+        </label>
+        <input
+          id="p-video"
+          name="videoUrl"
+          maxLength={300}
+          placeholder="https://www.youtube.com/watch?v=..."
+          defaultValue={v.videoUrl}
+          className={box}
+        />
+        <p className="mt-1 text-xs text-neutral-500">
+          A YouTube or Vimeo link plays on the project page. A Facebook video
+          link opens on Facebook.
+        </p>
+        <Err text={f.videoUrl} />
+      </div>
       <label className="flex items-center gap-2 text-sm">
         <input
           type="checkbox"
@@ -179,6 +201,15 @@ export default function ProjectForm({
           defaultChecked={v.isPublished === "on"}
         />
         Show this project on the public Portfolio page
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          name="isFeatured"
+          defaultChecked={v.isFeatured === "on"}
+        />
+        Feature this project (larger on the Portfolio page, first on the
+        homepage)
       </label>
       <div>
         <button

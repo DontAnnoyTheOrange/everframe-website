@@ -13,6 +13,7 @@ import {
   slugify,
   uploadedImageSchema,
 } from "@/lib/portfolio/schema";
+import { parseVideoUrl } from "@/lib/portfolio/video";
 
 export type ProjectState = {
   ok?: boolean;
@@ -45,11 +46,14 @@ function readProject(formData: FormData) {
     newCategory: s("newCategory"),
     description: s("description"),
     shootDate: s("shootDate"),
+    videoUrl: s("videoUrl"),
     isPublished: formData.get("isPublished") === "on" ? "on" : "",
+    isFeatured: formData.get("isFeatured") === "on" ? "on" : "",
   };
   const parsed = projectSchema.safeParse({
     ...values,
     isPublished: values.isPublished === "on",
+    isFeatured: values.isFeatured === "on",
   });
   return { values, parsed };
 }
@@ -147,6 +151,13 @@ async function saveProject(
       values,
     };
   const v = parsed.data;
+  const video = parseVideoUrl(v.videoUrl);
+  if (!video.ok)
+    return {
+      message: "Please check the highlighted fields.",
+      fields: { videoUrl: video.message },
+      values,
+    };
   let categoryId = v.categoryId;
   if (categoryId === NEW_CATEGORY) {
     const made = await resolveNewCategory(supabase, v.newCategory);
@@ -173,6 +184,8 @@ async function saveProject(
     description: v.description || null,
     shoot_date: v.shootDate || null,
     is_published: v.isPublished,
+    is_featured: v.isFeatured,
+    video_url: video.video?.url ?? null,
   };
 
   let id: string | undefined;
@@ -226,6 +239,52 @@ export async function updateProject(
 ): Promise<ProjectState> {
   const r = await saveProject("update", formData);
   return r.values ? { ...r, nonce: crypto.randomUUID() } : r;
+}
+
+// Moves a project one place earlier or later in the public Portfolio. Every project is renumbered
+// 1, 2, 3... in the order the visitors see (manual order first, then newest), then two are swapped.
+export async function moveProject(formData: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("projectId") ?? "");
+  const dir = formData.get("dir") === "up" ? -1 : 1;
+  if (!idSchema.safeParse(id).success) return;
+  const { data } = await supabase
+    .from("portfolio_projects")
+    .select("id,sort_order")
+    .order("sort_order")
+    .order("created_at", { ascending: false })
+    .limit(500);
+  const order = (data ?? []) as { id: string; sort_order: number }[];
+  const i = order.findIndex((p) => p.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= order.length) return;
+  [order[i], order[j]] = [order[j], order[i]];
+  for (let k = 0; k < order.length; k++) {
+    if (order[k].sort_order === k + 1) continue;
+    const { error } = await supabase
+      .from("portfolio_projects")
+      .update({ sort_order: k + 1 })
+      .eq("id", order[k].id);
+    if (error) {
+      console.error("move project failed:", error.message);
+      break;
+    }
+  }
+  refresh();
+  revalidatePath("/", "layout");
+}
+
+// Quick on/off for "featured" from the project list.
+export async function toggleFeatured(formData: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("projectId") ?? "");
+  if (!idSchema.safeParse(id).success) return;
+  await supabase
+    .from("portfolio_projects")
+    .update({ is_featured: formData.get("on") === "1" })
+    .eq("id", id);
+  refresh(id);
+  revalidatePath("/", "layout");
 }
 
 // Deletes the project and its photos (database rows first, then the files in Cloudinary).

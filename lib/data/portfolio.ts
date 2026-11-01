@@ -22,6 +22,8 @@ export type PortfolioProject = {
   category_id: string;
   category_name: string;
   category_slug: string;
+  is_featured: boolean;
+  video_url: string | null;
 };
 
 export type PortfolioCard = PortfolioProject & {
@@ -32,7 +34,7 @@ export type PortfolioCard = PortfolioProject & {
 const IMAGE_COLS =
   "id,project_id,cloudinary_public_id,width,height,alt_text,caption,sort_order,is_cover";
 const PROJECT_COLS =
-  "id,slug,title,description,shoot_date,category_id,sort_order,created_at";
+  "id,slug,title,description,shoot_date,category_id,is_featured,video_url,sort_order,created_at";
 
 async function categories() {
   const db = createPublicClient();
@@ -107,10 +109,14 @@ export async function getPortfolio(): Promise<{
       category_id: cat.id,
       category_name: cat.name,
       category_slug: cat.slug,
+      is_featured: p.is_featured === true,
+      video_url: (p.video_url as string | null) ?? null,
       cover: imgs.find((i) => i.is_cover) ?? imgs[0] ?? null,
       imageCount: imgs.length,
     });
   }
+  // Featured projects come first; inside each group the admin's own order is kept.
+  cards.sort((a, b) => Number(b.is_featured) - Number(a.is_featured));
   return {
     cards,
     categories: cats
@@ -161,6 +167,8 @@ export async function getProject(
       category_id: (p.category_id as string) ?? "",
       category_name: cat?.name ?? "",
       category_slug: cat?.slug ?? "",
+      is_featured: p.is_featured === true,
+      video_url: (p.video_url as string | null) ?? null,
     },
     images: (imgs ?? []) as PortfolioImage[],
   };

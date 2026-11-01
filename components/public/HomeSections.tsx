@@ -1,7 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import CloudImage from "@/components/portfolio/CloudImage";
 import ContactLinks from "@/components/public/ContactLinks";
-import type { PortfolioCard } from "@/lib/data/portfolio";
 import type { SiteSettings, Testimonial } from "@/lib/data/settings";
 import { formatPeso } from "@/lib/format";
 import type { Catalog } from "@/lib/types/db";
@@ -9,7 +8,7 @@ import type { Catalog } from "@/lib/types/db";
 const eyebrow = "text-brass text-xs tracking-[0.25em] uppercase";
 const h2 = "text-bone mt-2 font-serif text-3xl md:text-4xl";
 
-/** About the studio. Uses the owner's own words when they wrote some, otherwise plain facts. */
+/** Meet the photographer. Uses Ian's own words when he wrote some, otherwise plain facts only. */
 export function StudioSection({
   settings,
   homeBase,
@@ -29,78 +28,63 @@ export function StudioSection({
       : null,
   ].filter((s): s is { n: string; label: string } => s !== null);
   return (
-    <section className="px-6 py-20 md:px-16">
-      <p className={eyebrow}>The studio</p>
-      <h2 className={h2}>One team for photo and video</h2>
-      <div className="mt-6 grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <p className="text-stone max-w-2xl text-base leading-relaxed whitespace-pre-line">
-          {settings.aboutText ||
-            `Everframe Productions covers weddings, debuts, corporate events and concerts. We are based in ${homeBase}${settings.serviceArea ? ` and cover ${settings.serviceArea}` : " and travel for events across the Philippines"}.`}
-        </p>
-        {stats.length > 0 && (
-          <dl className="flex gap-10">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <dt className="text-mute text-xs">{s.label}</dt>
-                <dd className="text-brass mt-1 font-serif text-4xl">{s.n}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </div>
-    </section>
-  );
-}
-
-/** One big picture per event type, taken from the real portfolio. Hidden until there is work to show. */
-export function FeaturedWork({
-  cards,
-  cloud,
-}: {
-  cards: PortfolioCard[];
-  cloud: string;
-}) {
-  const seen = new Set<string>();
-  const picks = cards
-    .filter((c) => c.cover)
-    .filter((c) =>
-      seen.has(c.category_id) ? false : !!seen.add(c.category_id),
-    )
-    .slice(0, 3);
-  if (picks.length === 0 || !cloud) return null;
-  return (
-    <section id="featured" className="px-6 pb-20 md:px-16">
-      <p className={eyebrow}>Featured work</p>
-      <h2 className={h2}>Recent moments</h2>
-      <ul className="mt-8 grid gap-4 md:grid-cols-3">
-        {picks.map((c) => (
-          <li key={c.id}>
-            <Link
-              href={`/portfolio?category=${c.category_slug}`}
-              className="group border-line relative block overflow-hidden rounded-md border"
-            >
-              <CloudImage
-                cloud={cloud}
-                publicId={c.cover!.cloudinary_public_id}
-                width={c.cover!.width}
-                height={c.cover!.height}
-                alt={c.cover!.alt_text}
-                sizes="(min-width: 768px) 33vw, 100vw"
-                className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+    <section id="studio" className="scroll-mt-20 px-6 py-20 md:px-16 md:py-28">
+      <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-20">
+        <div className="relative mx-auto w-full max-w-md md:max-w-none">
+          <div className="border-line relative aspect-[4/5] overflow-hidden rounded-sm border">
+            <Image
+              src="/photographer/portrait-bw.webp"
+              alt="Black and white portrait of Ian Arzaga, photographer and founder of Everframe Productions, standing with his hands in his pockets."
+              fill
+              sizes="(min-width: 768px) 40vw, 90vw"
+              className="object-cover object-[50%_30%]"
+            />
+          </div>
+          <div className="border-line bg-ink absolute -right-3 -bottom-8 w-2/5 overflow-hidden rounded-sm border p-1.5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.9)] md:-right-8">
+            <div className="relative aspect-[3/4]">
+              <Image
+                src="/photographer/camera-bw.webp"
+                alt="Ian Arzaga behind his camera on a gimbal, only his eyes visible above the lens."
+                fill
+                sizes="(min-width: 768px) 16vw, 36vw"
+                className="object-cover"
               />
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 text-sm text-[#F5F1EA]">
-                {c.category_name}
-              </span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p className={eyebrow}>Meet the photographer</p>
+          <h2 className={h2}>Hi, I&rsquo;m Ian Arzaga</h2>
+          <p className="text-stone mt-6 max-w-xl text-base leading-relaxed whitespace-pre-line">
+            {settings.aboutText ||
+              `I am the photographer and videographer behind Everframe Productions, based in ${homeBase}${settings.serviceArea ? ` and covering ${settings.serviceArea}` : ", and I travel for events across the Philippines"}. Weddings, debuts, corporate events and concerts: my goal is to capture genuine emotions and the small moments you will want to relive.`}
+          </p>
+          {stats.length > 0 && (
+            <dl className="mt-8 flex gap-10">
+              {stats.map((s) => (
+                <div key={s.label}>
+                  <dt className="text-mute text-xs">{s.label}</dt>
+                  <dd className="text-brass mt-1 font-serif text-4xl">{s.n}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="/portfolio"
+              className="border-line text-bone hover:border-brass rounded-md border px-5 py-3 text-sm"
+            >
+              See my work
             </Link>
-          </li>
-        ))}
-      </ul>
-      <Link
-        href="/portfolio"
-        className="text-stone hover:text-bone mt-6 inline-block text-sm underline underline-offset-4"
-      >
-        See the full portfolio
-      </Link>
+            <Link
+              href="/booking"
+              className="bg-brass text-brass-ink rounded-md px-5 py-3 text-sm font-medium"
+            >
+              Book a session
+            </Link>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

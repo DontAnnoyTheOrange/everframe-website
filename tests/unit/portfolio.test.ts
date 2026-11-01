@@ -9,6 +9,7 @@ import {
   slugify,
   uploadedImageSchema,
 } from "../../lib/portfolio/schema";
+import { parseVideoUrl, videoFromStored } from "../../lib/portfolio/video";
 
 const UUID = "123e4567-e89b-42d3-a456-426614174000";
 
@@ -79,6 +80,8 @@ describe("portfolio rules", () => {
     description: "",
     shootDate: "",
     isPublished: false,
+    isFeatured: false,
+    videoUrl: "",
   };
   it("accepts a project and reports every problem at once", () => {
     expect(projectSchema.safeParse(ok).success).toBe(true);
@@ -137,5 +140,54 @@ describe("portfolio rules", () => {
       imageTextSchema.safeParse({ alt: "Bride and groom", caption: "" })
         .success,
     ).toBe(true);
+  });
+});
+
+describe("video links", () => {
+  const yt = "dQw4w9WgXcQ";
+  it("accepts the YouTube links people copy", () => {
+    for (const u of [
+      `https://www.youtube.com/watch?v=${yt}`,
+      `https://youtu.be/${yt}?si=abc`,
+      `youtube.com/shorts/${yt}`,
+      `https://m.youtube.com/embed/${yt}`,
+    ]) {
+      const r = parseVideoUrl(u);
+      expect(r.ok && r.video?.embedSrc).toBe(
+        `https://www.youtube-nocookie.com/embed/${yt}?rel=0`,
+      );
+    }
+  });
+  it("accepts Vimeo and turns it into a player link", () => {
+    const r = parseVideoUrl("https://vimeo.com/123456789");
+    expect(r.ok && r.video?.embedSrc).toBe(
+      "https://player.vimeo.com/video/123456789",
+    );
+  });
+  it("keeps Facebook as a link that opens on Facebook", () => {
+    const r = parseVideoUrl("https://www.facebook.com/everframe/videos/12345");
+    expect(r.ok && r.video?.provider).toBe("facebook");
+    expect(r.ok && r.video?.embedSrc).toBeNull();
+  });
+  it("allows empty", () => {
+    expect(parseVideoUrl("  ")).toEqual({ ok: true, video: null });
+  });
+  it("refuses other sites, scripts, http, look-alikes", () => {
+    for (const bad of [
+      "javascript:alert(1)",
+      "http://youtu.be/dQw4w9WgXcQ",
+      "https://evil.com/watch?v=dQw4w9WgXcQ",
+      "https://youtube.com.evil.com/watch?v=dQw4w9WgXcQ",
+      "https://youtube.com/watch?v=short",
+      "https://user:pw@youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://vimeo.com/channels/staffpicks",
+      "https://facebook.com",
+    ])
+      expect(parseVideoUrl(bad).ok).toBe(false);
+  });
+  it("re-checks stored values before showing", () => {
+    expect(videoFromStored("javascript:alert(1)")).toBeNull();
+    expect(videoFromStored(null)).toBeNull();
+    expect(videoFromStored(`https://youtu.be/${yt}`)?.provider).toBe("youtube");
   });
 });

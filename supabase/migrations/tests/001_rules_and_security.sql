@@ -304,5 +304,25 @@ reset role;
 select pg_temp.assert((select venue_place_id is null and venue_lat is null and venue_lng is null from public.bookings where client_name = 'Venue Client Renamed'), 'a new venue text clears the old map pin');
 select pg_temp.assert((select venue from public.bookings where client_name = 'Venue Client Renamed') = 'Another Hall, Imus', 'new venue text saved');
 
+-- ===== 12. FEATURED PROJECTS AND VIDEO LINKS (migration 008) =====
+insert into public.portfolio_projects (category_id, slug, title, is_published, is_featured, video_url)
+  values ((select id from public.event_categories order by sort_order limit 1), 'feat-test', 'Feat test', true, true, 'https://youtu.be/dQw4w9WgXcQ');
+select pg_temp.assert((select is_featured and video_url is not null from public.portfolio_projects where slug = 'feat-test'), 'featured flag and video link are saved');
+select pg_temp.assert((select not is_featured and video_url is null from public.portfolio_projects where slug <> 'feat-test' limit 1) is not false, 'existing projects default to not featured, no video');
+do $$ begin
+  insert into public.portfolio_projects (category_id, slug, title, video_url)
+    values ((select id from public.event_categories limit 1), 'bad-video', 'Bad', 'javascript:alert(1)');
+  raise exception 'a non-https video link was accepted';
+exception when check_violation then null; end $$;
+do $$ begin
+  insert into public.portfolio_projects (category_id, slug, title, video_url)
+    values ((select id from public.event_categories limit 1), 'bad-video2', 'Bad', 'http://youtu.be/abc');
+  raise exception 'an http video link was accepted';
+exception when check_violation then null; end $$;
+-- Visitors can read the new columns only for published projects (same policy as before).
+set local role anon;
+select pg_temp.assert((select count(*) from public.portfolio_projects where slug = 'feat-test') = 1, 'visitors can read a published featured project');
+reset role;
+
 select 'ALL TESTS PASSED' as result;
 rollback;

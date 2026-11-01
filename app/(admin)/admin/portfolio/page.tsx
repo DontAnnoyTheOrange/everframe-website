@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import AdminShell from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth/dal";
+import { moveProject, toggleFeatured } from "./actions";
 
 export const metadata: Metadata = {
   title: "Portfolio",
@@ -13,7 +14,8 @@ export default async function AdminPortfolioPage() {
   const [projects, images, cats] = await Promise.all([
     supabase
       .from("portfolio_projects")
-      .select("id,title,slug,category_id,is_published,shoot_date")
+      .select("id,title,slug,category_id,is_published,is_featured,shoot_date")
+      .order("sort_order")
       .order("created_at", { ascending: false })
       .limit(200),
     supabase.from("portfolio_images").select("project_id").limit(3000),
@@ -45,7 +47,8 @@ export default async function AdminPortfolioPage() {
       </div>
       <p className="mt-2 text-sm text-neutral-600">
         Each project is one shoot with its photos. Only projects marked as shown
-        appear on the public Portfolio page.
+        appear on the public Portfolio page, in the order listed here. Featured
+        projects are shown larger and come first.
       </p>
       {failed && (
         <p
@@ -63,20 +66,22 @@ export default async function AdminPortfolioPage() {
               <th className="px-4 py-3">Category</th>
               <th className="px-4 py-3 text-right">Photos</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Featured</th>
+              <th className="px-4 py-3">Order</th>
             </tr>
           </thead>
           <tbody>
             {(projects.data ?? []).length === 0 && (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={6}
                   className="px-4 py-8 text-center text-neutral-500"
                 >
                   No projects yet. Create your first one.
                 </td>
               </tr>
             )}
-            {(projects.data ?? []).map((p) => (
+            {(projects.data ?? []).map((p, idx, all) => (
               <tr key={p.id as string} className="border-t border-neutral-100">
                 <td className="px-4 py-3">
                   <Link
@@ -98,6 +103,49 @@ export default async function AdminPortfolioPage() {
                   >
                     {p.is_published ? "Shown" : "Hidden"}
                   </span>
+                </td>
+                <td className="px-4 py-3">
+                  <form action={toggleFeatured}>
+                    <input
+                      type="hidden"
+                      name="projectId"
+                      value={p.id as string}
+                    />
+                    <input
+                      type="hidden"
+                      name="on"
+                      value={p.is_featured ? "0" : "1"}
+                    />
+                    <button
+                      aria-pressed={p.is_featured === true}
+                      className={`rounded border px-2 py-1 text-xs ${p.is_featured ? "border-amber-400 bg-amber-50 text-amber-900" : "border-neutral-300 text-neutral-600 hover:bg-neutral-100"}`}
+                    >
+                      {p.is_featured ? "★ Featured" : "☆ Feature"}
+                    </button>
+                  </form>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-1">
+                    {(["up", "down"] as const).map((dir) => (
+                      <form key={dir} action={moveProject}>
+                        <input
+                          type="hidden"
+                          name="projectId"
+                          value={p.id as string}
+                        />
+                        <input type="hidden" name="dir" value={dir} />
+                        <button
+                          disabled={
+                            dir === "up" ? idx === 0 : idx === all.length - 1
+                          }
+                          aria-label={`Move ${p.title as string} ${dir === "up" ? "earlier" : "later"}`}
+                          className="rounded border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-100 disabled:opacity-30"
+                        >
+                          {dir === "up" ? "↑" : "↓"}
+                        </button>
+                      </form>
+                    ))}
+                  </div>
                 </td>
               </tr>
             ))}

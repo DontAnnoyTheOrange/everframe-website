@@ -26,8 +26,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body className="antialiased">{children}</body>
+    <html
+      lang="en"
+      className={`${display.variable} ${body.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="antialiased">
+        {/* Runs before the page paints: marks visitors who already saw the intro this session. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem("everframe-intro-seen")==="1")document.documentElement.setAttribute("data-ef-seen","")}catch(e){}`,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

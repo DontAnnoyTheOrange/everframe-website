@@ -31,7 +31,9 @@ export default async function EditProjectPage({
   const [proj, imgs, cats] = await Promise.all([
     supabase
       .from("portfolio_projects")
-      .select("id,title,slug,category_id,description,shoot_date,is_published")
+      .select(
+        "id,title,slug,category_id,description,shoot_date,is_published,is_featured,video_url",
+      )
       .eq("id", id)
       .limit(1),
     supabase
@@ -104,7 +106,9 @@ export default async function EditProjectPage({
               categoryId: p.category_id as string,
               description: (p.description as string | null) ?? "",
               shootDate: (p.shoot_date as string | null) ?? "",
+              videoUrl: (p.video_url as string | null) ?? "",
               isPublished: p.is_published === true,
+              isFeatured: p.is_featured === true,
             }}
           />
           <DeleteProject projectId={p.id as string} />

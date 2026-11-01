@@ -1,76 +1,90 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// The loader is short on purpose: long enough to read the name, never a wall in front of the site.
+const LOADER_MS = 1800;
+export const SEEN_KEY = "everframe-intro-seen";
+
+const noop = () => () => {};
+function readSeen(): boolean {
+  try {
+    return sessionStorage.getItem(SEEN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Tells the hero it may start its entrance animation. */
+function announceReady() {
+  document.documentElement.dataset.efReady = "1";
+  window.dispatchEvent(new Event("ef:ready"));
+}
+
 /**
- * Everframe Productions — brand loading screen.
- *
- * Usage (in app/layout.tsx or app/page.tsx):
- *
- *   import LoadingScreen from '@/components/LoadingScreen';
- *
- *   export default function RootLayout({ children }) {
- *     return (
- *       <html lang="en">
- *         <body>
- *           <LoadingScreen />
- *           {children}
- *         </body>
- *       </html>
- *     );
- *   }
- *
- * Requires:
- *   npm install framer-motion
- *
- * Logo: replace the SVG monogram below with your actual /public/logo.svg
- * (the exact "EF" letterform + shutter icon) once you export it from the
- * source file — this recreates the layout (corner frame, wordmark,
- * tracked subtitle) but not the precise letterforms.
+ * Everframe loading introduction. Shown once per browser session (not on every page), skipped quickly
+ * for visitors who prefer reduced motion, and never longer than the page needs plus a short intro.
  */
-
-// How long the loader stays on screen, in milliseconds (6 seconds).
-const LOADER_MIN_MS = 4000;
-
 export default function LoadingScreen() {
-  const [visible, setVisible] = useState(true);
+  // false while the server renders, then the real value in the browser.
+  const seen = useSyncExternalStore(noop, readSeen, () => false);
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // Always show the loader for the full time on every page load,
-    // so the logo and name can be read.
+    if (seen) {
+      announceReady();
+      return;
+    }
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const minDisplay = new Promise<void>((resolve) =>
-      setTimeout(resolve, LOADER_MIN_MS),
+      setTimeout(resolve, reduce ? 300 : LOADER_MS),
     );
     const pageReady = new Promise<void>((resolve) => {
       if (document.readyState === "complete") resolve();
-      else window.addEventListener("load", () => resolve(), { once: true });
+      else {
+        window.addEventListener("load", () => resolve(), { once: true });
+        setTimeout(resolve, 4000); // never wait forever for a slow image
+      }
     });
+    let cancelled = false;
+    Promise.all([minDisplay, pageReady]).then(() => {
+      if (cancelled) return;
+      try {
+        sessionStorage.setItem(SEEN_KEY, "1");
+      } catch {}
+      setDone(true);
+      announceReady();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [seen]);
 
-    Promise.all([minDisplay, pageReady]).then(() => setVisible(false));
-  }, []);
+  const visible = !seen && !done;
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
+          role="status"
+          aria-label="Loading Everframe Productions"
           initial={{ opacity: 1, clipPath: "inset(0% 0 0% 0)" }}
           exit={{ clipPath: "inset(50% 0 50% 0)" }}
           transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1] }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-black"
+          className="ef-loader fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-black"
         >
-          {/* Corner frame + EF monogram + shutter */}
           <div className="relative h-28 w-28">
             <span className="absolute top-0 left-0 h-5 w-5 border-t-[1.5px] border-l-[1.5px] border-[#C9A24B]" />
             <span className="absolute top-0 right-0 h-5 w-5 border-t-[1.5px] border-r-[1.5px] border-[#C9A24B]" />
             <span className="absolute bottom-0 left-0 h-5 w-5 border-b-[1.5px] border-l-[1.5px] border-[#C9A24B]" />
             <span className="absolute right-0 bottom-0 h-5 w-5 border-r-[1.5px] border-b-[1.5px] border-[#C9A24B]" />
-
-            {/* EF letters — replace with your exact logo SVG/PNG once exported */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
               className="absolute inset-0"
             >
               <span className="absolute top-3 left-3.5 font-serif text-[56px] leading-none text-[#F5F1EA]">
@@ -80,16 +94,15 @@ export default function LoadingScreen() {
                 F
               </span>
             </motion.div>
-
-            {/* Shutter icon, nested at the E/F overlap like the source logo */}
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.svg
+                aria-hidden="true"
                 width="26"
                 height="26"
                 viewBox="0 0 64 64"
                 animate={{ rotate: [0, 28, 0] }}
                 transition={{
-                  duration: 2.4,
+                  duration: 1.8,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -125,22 +138,18 @@ export default function LoadingScreen() {
               </motion.svg>
             </div>
           </div>
-
-          {/* Wordmark */}
           <motion.span
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
             className="font-serif text-2xl tracking-[0.12em] text-[#F5F1EA]"
           >
             EVERFRAME
           </motion.span>
-
-          {/* Subtitle */}
           <motion.span
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+            transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
             className="flex items-center gap-2.5 text-[11px] tracking-[0.3em] text-[#C9A24B]"
           >
             <span className="inline-block h-px w-5 bg-[#C9A24B]" />

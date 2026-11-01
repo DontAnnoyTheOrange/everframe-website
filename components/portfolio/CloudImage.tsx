@@ -14,6 +14,7 @@ export default function CloudImage({
   sizes,
   priority,
   className,
+  parallax,
 }: {
   cloud: string;
   publicId: string;
@@ -23,6 +24,7 @@ export default function CloudImage({
   sizes: string;
   priority?: boolean;
   className?: string;
+  parallax?: boolean;
 }) {
   return (
     <Image
@@ -34,6 +36,7 @@ export default function CloudImage({
       sizes={sizes}
       priority={priority}
       className={className}
+      data-parallax={parallax ? "" : undefined}
     />
   );
 }

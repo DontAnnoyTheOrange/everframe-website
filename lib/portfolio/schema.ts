@@ -78,7 +78,9 @@ export const projectSchema = z.object({
   shootDate: z.string().refine((v) => v === "" || isRealDate(v), {
     message: "Please pick a real date.",
   }),
+  videoUrl: z.string().max(300, "That link is too long."),
   isPublished: z.boolean(),
+  isFeatured: z.boolean(),
 });
 
 export const uploadedImageSchema = z.object({

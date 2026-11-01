@@ -32,7 +32,9 @@ export default async function NewProjectPage() {
           categoryId: "",
           description: "",
           shootDate: "",
+          videoUrl: "",
           isPublished: false,
+          isFeatured: false,
         }}
       />
     </AdminShell>

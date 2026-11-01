@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Gallery from "@/components/portfolio/Gallery";
 import { CLOUD_NAME } from "@/lib/cloudinary/url";
-import { getProject } from "@/lib/data/portfolio";
+import VideoEmbed from "@/components/portfolio/VideoEmbed";
+import { getPortfolio, getProject } from "@/lib/data/portfolio";
+import { videoFromStored } from "@/lib/portfolio/video";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +29,11 @@ export default async function ProjectPage({ params }: Params) {
   if (found === "missing") notFound();
   const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim() ?? "";
   const imagesOn = CLOUD_NAME.test(cloud) && !cloud.startsWith("YOUR-");
+  // "Next project": the one after this in the Portfolio order, looping back to the first.
+  const all = (await getPortfolio())?.cards ?? [];
+  const at = all.findIndex((c) => c.slug === slug);
+  const next = all.length > 1 && at >= 0 ? all[(at + 1) % all.length] : null;
+  const video = found ? videoFromStored(found.project.video_url) : null;
 
   return (
     <main className="px-6 pt-6 pb-24 md:px-16">
@@ -43,7 +50,7 @@ export default async function ProjectPage({ params }: Params) {
           <p className="text-brass mt-6 text-xs tracking-[0.25em] uppercase">
             {found.project.category_name}
           </p>
-          <h1 className="text-bone mt-2 font-serif text-4xl md:text-5xl">
+          <h1 className="text-bone mt-2 font-serif text-4xl md:text-6xl">
             {found.project.title}
           </h1>
           {found.project.description && (
@@ -61,6 +68,27 @@ export default async function ProjectPage({ params }: Params) {
             ) : (
               <p className="text-mute">Photos coming soon.</p>
             )}
+          </div>
+          {video && <VideoEmbed video={video} title={found.project.title} />}
+          <div className="border-line mt-16 flex flex-wrap items-center justify-between gap-6 border-t pt-8">
+            {next ? (
+              <Link href={`/portfolio/${next.slug}`} className="group">
+                <span className="text-mute text-xs tracking-[0.2em] uppercase">
+                  Next project
+                </span>
+                <span className="text-bone group-hover:text-brass mt-1 block font-serif text-2xl">
+                  {next.title} →
+                </span>
+              </Link>
+            ) : (
+              <span />
+            )}
+            <Link
+              href="/booking"
+              className="bg-brass text-brass-ink rounded-md px-6 py-3 text-sm font-medium"
+            >
+              Book a session
+            </Link>
           </div>
         </>
       )}

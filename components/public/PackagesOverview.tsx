@@ -14,7 +14,7 @@ export default function PackagesOverview({ catalog }: { catalog: Catalog }) {
   );
 
   return (
-    <section id="packages" className="px-6 py-20 md:px-16">
+    <section id="packages" className="scroll-mt-20 px-6 py-20 md:px-16">
       <p className="text-brass text-xs tracking-[0.25em] uppercase">Packages</p>
       <h2 className="text-bone mt-2 mb-10 font-serif text-3xl md:text-4xl">
         Coverage that fits the day
