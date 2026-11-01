@@ -174,3 +174,117 @@ export function checkManualBooking(raw: unknown): ManualCheck {
     return { ok: false, fields };
   return { ok: true, data: parsed.data };
 }
+
+// ---------- Editing an existing booking ----------
+
+export const editBookingSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Please enter the client's name.")
+    .max(120, "That name is too long."),
+  email: manualBookingSchema.shape.email,
+  phone: manualBookingSchema.shape.phone,
+  messenger: manualBookingSchema.shape.messenger,
+  venue: z
+    .string()
+    .trim()
+    .max(200, "Please keep the venue under 200 characters."),
+  // The schedule is optional here (an inquiry may have no date yet), but it is all-or-nothing.
+  date: z.string().refine((v) => v === "" || isRealDate(v), {
+    message: "Please pick a real date.",
+  }),
+  time: z.string().refine((v) => v === "" || CLOCK.test(v), {
+    message: "Please pick a start time.",
+  }),
+  hours: z
+    .string()
+    .trim()
+    .refine(
+      (v) =>
+        v === "" || (/^\d{1,2}$/.test(v) && Number(v) >= 1 && Number(v) <= 24),
+      {
+        message: "Hours must be a whole number from 1 to 24.",
+      },
+    ),
+  totalOverride: manualBookingSchema.shape.totalOverride,
+});
+
+export type EditBookingInput = z.infer<typeof editBookingSchema>;
+
+export type EditCheck =
+  | { ok: true; data: EditBookingInput }
+  | { ok: false; fields: Record<string, string> };
+
+export function checkEditBooking(raw: unknown): EditCheck {
+  const parsed = editBookingSchema.safeParse(raw);
+  const fields: Record<string, string> = {};
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const key = String(issue.path[0] ?? "form");
+      if (!(key in fields)) fields[key] = issue.message;
+    }
+  }
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const has = (k: string) =>
+    typeof r[k] === "string" && (r[k] as string).trim() !== "";
+  if (!has("email") && !has("phone") && !has("messenger"))
+    fields.contact =
+      "Please keep at least one way to reach the client: Messenger link, mobile or email.";
+  const given = ["date", "time", "hours"].filter(has);
+  if (given.length > 0 && given.length < 3) {
+    for (const k of ["date", "time", "hours"])
+      if (!has(k) && !(k in fields))
+        fields[k] = "Please fill in the date, start time and hours together.";
+  }
+  if (Object.keys(fields).length > 0 || !parsed.success)
+    return { ok: false, fields };
+  return { ok: true, data: parsed.data };
+}
+
+export type CurrentBooking = {
+  client_name: string;
+  client_email: string | null;
+  client_phone: string | null;
+  client_messenger: string | null;
+  venue: string | null;
+  starts_at: string | null;
+  duration_hours: number | null;
+  total_price: number | null;
+};
+
+/**
+ * Compares the form with what is saved and returns ONLY what changed, in the shape the database
+ * function expects. An empty result means "nothing to save".
+ */
+export function buildBookingPatch(
+  cur: CurrentBooking,
+  v: EditBookingInput,
+  cleanMessenger: string | null,
+): Record<string, string | number | null> {
+  const patch: Record<string, string | number | null> = {};
+  const same = (a: string | null, b: string) => (a ?? "") === b;
+  if (cur.client_name !== v.name) patch.client_name = v.name;
+  if (!same(cur.client_email, v.email)) patch.client_email = v.email || null;
+  const phone = v.phone ? normalizePhone(v.phone) : "";
+  if (!same(cur.client_phone, phone)) patch.client_phone = phone || null;
+  if (!same(cur.client_messenger, cleanMessenger ?? ""))
+    patch.client_messenger = cleanMessenger;
+  if (!same(cur.venue, v.venue)) patch.venue = v.venue || null;
+  if (v.date && v.time && v.hours) {
+    const iso = manilaIso(v.date, v.time);
+    if (cur.starts_at === null || Date.parse(cur.starts_at) !== Date.parse(iso))
+      patch.starts_at = iso;
+    if (
+      cur.duration_hours === null ||
+      Number(cur.duration_hours) !== Number(v.hours)
+    )
+      patch.duration_hours = Number(v.hours);
+  }
+  if (
+    v.totalOverride !== "" &&
+    Number(v.totalOverride) !== Number(cur.total_price)
+  )
+    patch.total_price = Number(v.totalOverride);
+  return patch;
+}

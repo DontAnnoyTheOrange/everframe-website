@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   createProject,
   updateProject,
   type ProjectState,
 } from "@/app/(admin)/admin/portfolio/actions";
+import { CATEGORY_NAME_MAX, NEW_CATEGORY } from "@/lib/portfolio/schema";
 
 const box =
   "w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm";
@@ -42,14 +43,17 @@ export default function ProjectForm({
     editing ? updateProject : createProject,
     {},
   );
+  const [picked, setPicked] = useState<string | null>(null);
   const v = state.values ?? {
     title: initial.title,
     slug: initial.slug,
     categoryId: initial.categoryId,
+    newCategory: "",
     description: initial.description,
     shootDate: initial.shootDate,
     isPublished: initial.isPublished ? "on" : "",
   };
+  const category = picked ?? (v.categoryId || categories[0]?.id || "");
   const f = state.fields ?? {};
   return (
     <form
@@ -90,7 +94,8 @@ export default function ProjectForm({
           <select
             id="p-category"
             name="categoryId"
-            defaultValue={v.categoryId || categories[0]?.id}
+            defaultValue={category}
+            onChange={(e) => setPicked(e.target.value)}
             className={box}
           >
             {categories.map((c) => (
@@ -98,8 +103,29 @@ export default function ProjectForm({
                 {c.name}
               </option>
             ))}
+            <option value={NEW_CATEGORY}>Other (type a new category)</option>
           </select>
           <Err text={f.categoryId} />
+          {category === NEW_CATEGORY && (
+            <div className="mt-3">
+              <label htmlFor="p-newcat" className={lab}>
+                New category name
+              </label>
+              <input
+                id="p-newcat"
+                name="newCategory"
+                maxLength={CATEGORY_NAME_MAX}
+                placeholder="e.g. Pre-nup shoot"
+                defaultValue={v.newCategory ?? ""}
+                className={box}
+              />
+              <p className="mt-1 text-xs text-neutral-500">
+                It is added to the Portfolio filters and to the event types on
+                the booking page.
+              </p>
+              <Err text={f.newCategory} />
+            </div>
+          )}
         </div>
         <div>
           <label htmlFor="p-date" className={lab}>

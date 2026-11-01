@@ -8,7 +8,7 @@ export default function AdminShell({
   children,
 }: {
   name: string;
-  current: "dashboard" | "bookings" | "schedule" | "portfolio";
+  current: "dashboard" | "bookings" | "schedule" | "portfolio" | "settings";
   children: React.ReactNode;
 }) {
   const link = (active: boolean) =>
@@ -21,7 +21,7 @@ export default function AdminShell({
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-3">
           <span className="font-semibold">Everframe Admin</span>
-          <nav aria-label="Admin" className="flex gap-1">
+          <nav aria-label="Admin" className="flex flex-wrap gap-1">
             <Link href="/admin" className={link(current === "dashboard")}>
               Dashboard
             </Link>
@@ -42,6 +42,12 @@ export default function AdminShell({
               className={link(current === "portfolio")}
             >
               Portfolio
+            </Link>
+            <Link
+              href="/admin/settings"
+              className={link(current === "settings")}
+            >
+              Site content
             </Link>
           </nav>
           <div className="ml-auto flex items-center gap-3 text-sm text-neutral-600">

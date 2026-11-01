@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   blockRange,
   blockSchema,
+  buildBookingPatch,
+  checkEditBooking,
   checkManualBooking,
 } from "../../lib/admin/schedule";
 
@@ -150,5 +152,97 @@ describe("manual booking", () => {
     expect(fields({ hours: 2.5 }).hours).toBeTruthy();
     expect(fields({ hours: 25 }).hours).toBeTruthy();
     expect(fields({ packageId: "x" }).packageId).toBeTruthy();
+  });
+});
+
+const edit = {
+  name: "Juan Dela Cruz",
+  email: "",
+  phone: "0917 123 4567",
+  messenger: "https://m.me/juan.delacruz",
+  venue: "Casa Real, Tagaytay",
+  date: "2026-12-05",
+  time: "09:30",
+  hours: "4",
+  totalOverride: "",
+};
+const current = {
+  client_name: "Juan Dela Cruz",
+  client_email: null,
+  client_phone: "09171234567",
+  client_messenger: "https://m.me/juan.delacruz",
+  venue: "Casa Real, Tagaytay",
+  starts_at: "2026-12-05T01:30:00+00:00", // 09:30 in Manila
+  duration_hours: 4,
+  total_price: 5000,
+};
+
+describe("editing a booking", () => {
+  const fields = (patch: object) => {
+    const r = checkEditBooking({ ...edit, ...patch });
+    return r.ok ? {} : r.fields;
+  };
+  it("accepts the saved values and reports every problem together", () => {
+    expect(checkEditBooking(edit).ok).toBe(true);
+    const f = fields({ name: "J", email: "nope", phone: "12", hours: "0" });
+    expect(Object.keys(f).sort()).toEqual(["email", "hours", "name", "phone"]);
+  });
+  it("keeps at least one way to contact the client", () => {
+    expect(fields({ messenger: "", phone: "", email: "" }).contact).toMatch(
+      /at least one/,
+    );
+    expect(
+      fields({ messenger: "", phone: "", email: "a@b.co" }).contact,
+    ).toBeUndefined();
+  });
+  it("date, time and hours go together (or are all empty for an inquiry)", () => {
+    expect(fields({ date: "", time: "", hours: "" })).toEqual({});
+    const f = fields({ date: "", time: "09:00", hours: "2" });
+    expect(f.date).toMatch(/together/);
+    expect(fields({ hours: "25" }).hours).toBeTruthy();
+    expect(fields({ hours: "2.5" }).hours).toBeTruthy();
+  });
+  it("sends only what changed", () => {
+    const same = checkEditBooking(edit);
+    if (!same.ok) throw new Error("should be valid");
+    expect(
+      buildBookingPatch(current, same.data, "https://m.me/juan.delacruz"),
+    ).toEqual({});
+    const changed = checkEditBooking({
+      ...edit,
+      name: "Juan D. Cruz",
+      phone: "+63 917 000 1111",
+      venue: "Another Hall",
+      time: "11:00",
+      hours: "5",
+      totalOverride: "5500",
+    });
+    if (!changed.ok) throw new Error("should be valid");
+    expect(
+      buildBookingPatch(current, changed.data, "https://m.me/juan.delacruz"),
+    ).toEqual({
+      client_name: "Juan D. Cruz",
+      client_phone: "+639170001111",
+      venue: "Another Hall",
+      starts_at: "2026-12-05T11:00:00+08:00",
+      duration_hours: 5,
+      total_price: 5500,
+    });
+  });
+  it("can clear email, phone and venue, and ignores an empty price box", () => {
+    const r = checkEditBooking({
+      ...edit,
+      venue: "",
+      phone: "",
+      email: "x@y.co",
+    });
+    if (!r.ok) throw new Error("should be valid");
+    expect(
+      buildBookingPatch(current, r.data, "https://m.me/juan.delacruz"),
+    ).toEqual({
+      venue: null,
+      client_phone: null,
+      client_email: "x@y.co",
+    });
   });
 });

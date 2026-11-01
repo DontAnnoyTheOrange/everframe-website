@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { signParams } from "../../lib/cloudinary/signature";
 import { PUBLIC_ID, cloudinaryUrl } from "../../lib/cloudinary/url";
 import {
+  NEW_CATEGORY,
+  cleanCategoryName,
   imageTextSchema,
   projectSchema,
   slugify,
@@ -73,6 +75,7 @@ describe("portfolio rules", () => {
     title: "Anna's Debut",
     slug: "",
     categoryId: UUID,
+    newCategory: "",
     description: "",
     shootDate: "",
     isPublished: false,
@@ -94,6 +97,22 @@ describe("portfolio rules", () => {
         "slug",
         "title",
       ]);
+  });
+  it("accepts the 'Other' choice and checks the typed category name", () => {
+    expect(
+      projectSchema.safeParse({
+        ...ok,
+        categoryId: NEW_CATEGORY,
+        newCategory: "Pre-nup",
+      }).success,
+    ).toBe(true);
+    expect(cleanCategoryName("  Pre-Nup   Shoot ")).toEqual({
+      ok: true,
+      name: "Pre-Nup Shoot",
+      slug: "pre-nup-shoot",
+    });
+    for (const bad of ["", " a ", "x".repeat(61), "!!!", "Others", "other"])
+      expect(cleanCategoryName(bad).ok, bad).toBe(false);
   });
   it("checks uploaded photo details and text", () => {
     const good = {

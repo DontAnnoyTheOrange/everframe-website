@@ -6,6 +6,8 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/dal";
 import { createUploadSignature, destroyImage } from "@/lib/cloudinary/server";
 import {
+  NEW_CATEGORY,
+  cleanCategoryName,
   imageTextSchema,
   projectSchema,
   slugify,
@@ -24,6 +26,8 @@ export type ImageResult = { ok: boolean; message: string };
 
 function refresh(projectId?: string) {
   revalidatePath("/portfolio", "layout");
+  revalidatePath("/booking"); // a new category is also a booking event type
+  revalidatePath("/pricing");
   revalidatePath("/admin/portfolio");
   if (projectId) revalidatePath(`/admin/portfolio/${projectId}`);
 }
@@ -38,6 +42,7 @@ function readProject(formData: FormData) {
     title: s("title"),
     slug: s("slug"),
     categoryId: s("categoryId"),
+    newCategory: s("newCategory"),
     description: s("description"),
     shootDate: s("shootDate"),
     isPublished: formData.get("isPublished") === "on" ? "on" : "",
@@ -58,6 +63,77 @@ function problems(error: z.ZodError): Record<string, string> {
   return fields;
 }
 
+type Db = Awaited<ReturnType<typeof requireAdmin>>["supabase"];
+
+// "Other": creates the category the admin typed (or reuses one with the same name), so it shows up
+// in the portfolio filters and as an event type on the booking page. It is placed just before
+// "Others", which always stays last.
+async function resolveNewCategory(
+  supabase: Db,
+  rawName: string,
+): Promise<{ ok: true; id: string } | { ok: false; message: string }> {
+  const clean = cleanCategoryName(rawName);
+  if (!clean.ok) return clean;
+  const { data, error } = await supabase
+    .from("event_categories")
+    .select("id,slug,name,sort_order,is_other")
+    .limit(200);
+  if (error)
+    return {
+      ok: false,
+      message: "Could not read the categories. Please try again.",
+    };
+  const all = (data ?? []) as {
+    id: string;
+    slug: string;
+    name: string;
+    sort_order: number;
+    is_other: boolean;
+  }[];
+  const same = all.find(
+    (c) =>
+      !c.is_other && (c.slug === clean.slug || slugify(c.name) === clean.slug),
+  );
+  if (same) return { ok: true, id: same.id }; // already exists: use it, never duplicate
+  const others = all.find((c) => c.is_other);
+  const sortOrder =
+    others?.sort_order ??
+    all.reduce((m, c) => Math.max(m, c.sort_order), 0) + 1;
+  for (let n = 0; n < 4; n++) {
+    const slug = n === 0 ? clean.slug : `${clean.slug}-${n + 1}`;
+    const res = await supabase
+      .from("event_categories")
+      .insert({
+        slug,
+        name: clean.name,
+        sort_order: sortOrder,
+        is_published: true,
+        is_other: false,
+      })
+      .select("id")
+      .single();
+    if (!res.error) {
+      if (others)
+        await supabase
+          .from("event_categories")
+          .update({ sort_order: sortOrder + 1 })
+          .eq("id", others.id);
+      return { ok: true, id: (res.data as { id: string }).id };
+    }
+    if (res.error.code !== "23505") {
+      console.error("create category failed:", res.error.message);
+      return {
+        ok: false,
+        message: "Could not create the category. Please try again.",
+      };
+    }
+  }
+  return {
+    ok: false,
+    message: "Could not create the category. Please try another name.",
+  };
+}
+
 async function saveProject(
   mode: "create" | "update",
   formData: FormData,
@@ -71,6 +147,17 @@ async function saveProject(
       values,
     };
   const v = parsed.data;
+  let categoryId = v.categoryId;
+  if (categoryId === NEW_CATEGORY) {
+    const made = await resolveNewCategory(supabase, v.newCategory);
+    if (!made.ok)
+      return {
+        message: "Please check the highlighted fields.",
+        fields: { newCategory: made.message },
+        values,
+      };
+    categoryId = made.id;
+  }
   const slug = v.slug || slugify(v.title);
   if (!slug)
     return {
@@ -82,7 +169,7 @@ async function saveProject(
   const row = {
     title: v.title,
     slug,
-    category_id: v.categoryId,
+    category_id: categoryId,
     description: v.description || null,
     shoot_date: v.shootDate || null,
     is_published: v.isPublished,

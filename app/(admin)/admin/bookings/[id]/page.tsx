@@ -31,11 +31,14 @@ export const metadata: Metadata = {
 
 export default async function BookingDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ updated?: string }>;
 }) {
   const { supabase, displayName } = await requireAdmin();
   const { id } = await params;
+  const { updated } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
 
   const { data } = await supabase
@@ -108,7 +111,21 @@ export default async function BookingDetailPage({
           {SOURCE_LABEL[b.source] ?? b.source} · received{" "}
           {formatManilaDate(b.created_at)} {formatManilaTime(b.created_at)}
         </span>
+        <Link
+          href={`/admin/bookings/${id}/edit`}
+          className="ml-auto rounded-md border border-neutral-300 bg-white px-4 py-1.5 text-sm hover:bg-neutral-100"
+        >
+          Edit details
+        </Link>
       </div>
+      {updated === "1" && (
+        <p
+          role="status"
+          className="mt-4 rounded-md bg-green-50 p-3 text-sm text-green-800"
+        >
+          Changes saved.
+        </p>
+      )}
 
       {clash && (
         <p

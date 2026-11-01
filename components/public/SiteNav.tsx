@@ -7,7 +7,10 @@ const links = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function SiteNav() {
+const cta = "bg-brass text-brass-ink rounded-md px-4 py-2 text-sm font-medium";
+
+// "Message us" opens the studio's Messenger chat when the owner has set it, otherwise the Contact page.
+export default function SiteNav({ messenger }: { messenger: string | null }) {
   return (
     <header className="flex items-center justify-between px-6 py-6 md:px-16">
       <Link href="/" className="text-bone font-serif text-xl tracking-wide">
@@ -23,13 +26,20 @@ export default function SiteNav() {
           </Link>
         ))}
       </nav>
-      {/* Messenger link becomes a site setting in Phase C. */}
-      <Link
-        href="/contact"
-        className="bg-brass text-brass-ink rounded-md px-4 py-2 text-sm font-medium"
-      >
-        Message us
-      </Link>
+      {messenger ? (
+        <a
+          href={messenger}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cta}
+        >
+          Message us
+        </a>
+      ) : (
+        <Link href="/contact" className={cta}>
+          Message us
+        </Link>
+      )}
     </header>
   );
 }

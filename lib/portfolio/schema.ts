@@ -17,6 +17,41 @@ export function slugify(text: string): string {
     .replace(/-+$/g, "");
 }
 
+/** The dropdown value that means "I will type a new category". */
+export const NEW_CATEGORY = "__new__";
+export const CATEGORY_NAME_MIN = 2;
+export const CATEGORY_NAME_MAX = 60;
+
+/** Tidies a typed category name: trims, collapses spaces, and checks the length. */
+export function cleanCategoryName(
+  raw: string,
+): { ok: true; name: string; slug: string } | { ok: false; message: string } {
+  const name = raw.replace(/\s+/g, " ").trim();
+  if (name.length < CATEGORY_NAME_MIN)
+    return {
+      ok: false,
+      message: "Please type the new category name (at least 2 characters).",
+    };
+  if (name.length > CATEGORY_NAME_MAX)
+    return {
+      ok: false,
+      message: `Please keep the category name under ${CATEGORY_NAME_MAX} characters.`,
+    };
+  const slug = slugify(name);
+  if (!slug)
+    return {
+      ok: false,
+      message: "The category name needs some letters or numbers.",
+    };
+  if (slug === "other" || slug === "others")
+    return {
+      ok: false,
+      message:
+        "“Others” is reserved for bookings. Please use a more specific name.",
+    };
+  return { ok: true, name, slug };
+}
+
 export const projectSchema = z.object({
   title: z
     .string()
@@ -31,7 +66,11 @@ export const projectSchema = z.object({
       message:
         "Use lowercase letters, numbers and single dashes only, like anna-debut.",
     }),
-  categoryId: z.uuid({ error: "Please choose a category." }),
+  categoryId: z.union([z.uuid(), z.literal(NEW_CATEGORY)], {
+    error: "Please choose a category.",
+  }),
+  // Only used when categoryId is NEW_CATEGORY (checked with cleanCategoryName).
+  newCategory: z.string().max(200),
   description: z
     .string()
     .trim()
