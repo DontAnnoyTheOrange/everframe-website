@@ -82,3 +82,30 @@ body {
 html[data-ef-seen] .ef-loader {
   display: none;
 }
+
+/* ---- Desktop motion layer (components/public/SiteMotion.tsx) ---- */
+
+/* Smooth scrolling (Lenis). Native scrolling is used when it is not running. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+html.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+/* Magnetic buttons: GSAP moves them, so a CSS transform transition must not fight it. */
+[data-magnetic] {
+  transition-property:
+    color, background-color, border-color, opacity, translate !important;
+  will-change: transform;
+}
+
+/* Sections reached from the menu receive focus (for keyboard and screen-reader users) but should not show a big outline. */
+section[id][tabindex="-1"]:focus,
+div[id][tabindex="-1"]:focus {
+  outline: none;
+}

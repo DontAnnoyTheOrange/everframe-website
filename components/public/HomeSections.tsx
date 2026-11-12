@@ -72,12 +72,14 @@ export function StudioSection({
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/portfolio"
+              data-magnetic
               className="border-line text-bone hover:border-brass rounded-md border px-5 py-3 text-sm"
             >
               See my work
             </Link>
             <Link
               href="/booking"
+              data-magnetic
               className="bg-brass text-brass-ink rounded-md px-5 py-3 text-sm font-medium"
             >
               Book a session
@@ -160,11 +162,43 @@ export function Reviews({ items }: { items: Testimonial[] }) {
   );
 }
 
-/** Last call to action: message us, or check dates. */
+/** Stands in for a homepage section whose content is not available yet, so its menu link still has somewhere to go. */
+export function SectionFallback({
+  id,
+  eyebrowText,
+  title,
+  text,
+  href,
+  label,
+}: {
+  id: string;
+  eyebrowText: string;
+  title: string;
+  text: string;
+  href: string;
+  label: string;
+}) {
+  return (
+    <section id={id} className="scroll-mt-20 px-6 py-20 md:px-16 md:py-28">
+      <p className={eyebrow}>{eyebrowText}</p>
+      <h2 className={h2}>{title}</h2>
+      <p className="text-stone mt-4 max-w-xl leading-relaxed">{text}</p>
+      <Link
+        href={href}
+        className="border-line text-bone hover:border-brass mt-8 inline-block rounded-md border px-6 py-3 text-sm"
+      >
+        {label}
+      </Link>
+    </section>
+  );
+}
+
+/** Last call to action (the "Contact" section of the home page): message us, or check dates. */
 export function ClosingCta({ settings }: { settings: SiteSettings }) {
   return (
-    <section className="px-6 py-20 md:px-16">
+    <section id="contact" className="scroll-mt-20 px-6 py-20 md:px-16">
       <div className="border-line rounded-md border px-6 py-14 text-center md:px-16">
+        <p className={eyebrow}>Contact</p>
         <h2 className="text-bone font-serif text-3xl md:text-5xl">
           Let&apos;s plan your day
         </h2>
@@ -174,6 +208,7 @@ export function ClosingCta({ settings }: { settings: SiteSettings }) {
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
             href="/booking"
+            data-magnetic
             className="bg-brass text-brass-ink rounded-md px-6 py-3 text-sm font-medium"
           >
             Check availability

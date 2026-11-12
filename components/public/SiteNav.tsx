@@ -4,14 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+// The home page is one long page: each menu item glides to its section ("id"). On the other pages of the
+// site ("page") the matching item is highlighted instead.
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/portfolio", label: "Portfolio" },
-  { href: "/#studio", label: "About" },
-  { href: "/#services", label: "Services" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/contact", label: "Contact" },
+  { href: "/", label: "Home", id: "", page: "" },
+  { href: "/#work", label: "Portfolio", id: "work", page: "/portfolio" },
+  { href: "/#studio", label: "About", id: "studio", page: "" },
+  { href: "/#services", label: "Services", id: "services", page: "" },
+  { href: "/#pricing", label: "Pricing", id: "pricing", page: "/pricing" },
+  { href: "/#contact", label: "Contact", id: "contact", page: "/contact" },
 ];
+const SECTION_IDS = ["work", "studio", "services", "pricing", "contact"];
 
 const cta =
   "bg-brass text-brass-ink rounded-md px-4 py-2 text-sm font-medium transition-transform hover:-translate-y-0.5";
@@ -22,6 +25,7 @@ export default function SiteNav() {
   const path = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [spy, setSpy] = useState(""); // which home-page section is in view ("" = the top)
   const toggle = useRef<HTMLButtonElement>(null);
   const firstLink = useRef<HTMLAnchorElement>(null);
 
@@ -35,6 +39,37 @@ export default function SiteNav() {
     };
   }, []);
 
+  // On the home page, follow the scroll so the menu shows which section you are in.
+  useEffect(() => {
+    if (path !== "/") return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const line = window.innerHeight * 0.4;
+      let cur = "";
+      for (const id of SECTION_IDS) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= line) cur = id;
+      }
+      const atEnd =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 4;
+      if (atEnd && document.getElementById("contact")) cur = "contact";
+      setSpy(cur);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    raf = requestAnimationFrame(update);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [path]);
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -44,6 +79,24 @@ export default function SiteNav() {
       if (e.key === "Escape") {
         setOpen(false);
         toggle.current?.focus();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      // Keep Tab inside the open menu: its links, its button and the menu toggle.
+      const menu = document.getElementById("mobile-menu");
+      const items = [
+        toggle.current,
+        ...Array.from(menu?.querySelectorAll<HTMLElement>("a[href]") ?? []),
+      ].filter((el): el is HTMLElement => el !== null);
+      const first = items[0];
+      const last = items[items.length - 1];
+      const at = document.activeElement;
+      if (e.shiftKey && at === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && at === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -53,7 +106,10 @@ export default function SiteNav() {
     };
   }, [open]);
 
-  const active = (href: string) => (href === path ? "page" : undefined);
+  const current = (l: (typeof links)[number]) => {
+    if (path === "/") return spy === l.id ? "location" : undefined;
+    return l.page && path.startsWith(l.page) ? "page" : undefined;
+  };
 
   return (
     <header
@@ -79,15 +135,16 @@ export default function SiteNav() {
             <Link
               key={l.label}
               href={l.href}
-              aria-current={active(l.href)}
-              className="hover:text-bone aria-[current=page]:text-bone relative after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#C9A24B] after:transition-transform hover:after:scale-x-100"
+              aria-current={current(l)}
+              data-active={current(l) ? "true" : undefined}
+              className="hover:text-bone data-[active=true]:text-bone relative after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#C9A24B] after:transition-transform hover:after:scale-x-100 data-[active=true]:after:scale-x-100"
             >
               {l.label}
             </Link>
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/booking" className={cta}>
+          <Link href="/booking" data-magnetic className={cta}>
             Book a session
           </Link>
           <button
@@ -129,9 +186,10 @@ export default function SiteNav() {
                   <Link
                     ref={i === 0 ? firstLink : undefined}
                     href={l.href}
-                    aria-current={active(l.href)}
+                    aria-current={current(l)}
+                    data-active={current(l) ? "true" : undefined}
                     onClick={() => setOpen(false)}
-                    className="text-bone aria-[current=page]:text-brass block py-5 font-serif text-3xl"
+                    className="text-bone data-[active=true]:text-brass block py-5 font-serif text-3xl"
                   >
                     {l.label}
                   </Link>

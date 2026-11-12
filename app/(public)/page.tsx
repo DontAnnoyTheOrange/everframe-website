@@ -10,6 +10,7 @@ import {
   ClosingCta,
   Journey,
   Reviews,
+  SectionFallback,
   StudioSection,
 } from "@/components/public/HomeSections";
 import PackagesOverview from "@/components/public/PackagesOverview";
@@ -121,14 +122,36 @@ export default async function Home() {
     <main className="min-h-screen bg-black">
       <HomeHero />
       <div id="after-hero" />
-      {cloud && <FeaturedExhibition items={exhibit} cloud={cloud} />}
+      <div id="work" className="scroll-mt-[72px]">
+        {cloud && exhibit.length > 0 ? (
+          <FeaturedExhibition items={exhibit} cloud={cloud} />
+        ) : (
+          <SectionFallback
+            id="work-empty"
+            eyebrowText="Portfolio"
+            title="Our work"
+            text="Browse the events we have covered, from weddings and debuts to corporate events and concerts."
+            href="/portfolio"
+            label="Open the portfolio"
+          />
+        )}
+      </div>
       <StudioSection
         settings={settings}
         homeBase={catalog?.homeBase ?? "Dasmariñas, Cavite"}
       />
       <ServicesSection items={services} />
-      {catalog && catalog.packages.length > 0 && (
+      {catalog && catalog.packages.length > 0 ? (
         <PackagesOverview catalog={catalog} />
+      ) : (
+        <SectionFallback
+          id="pricing"
+          eyebrowText="Pricing"
+          title="Packages and pricing"
+          text="See what each package includes and work out the price for your event."
+          href="/pricing"
+          label="Open the price calculator"
+        />
       )}
       <Journey catalog={catalog} />
       <Reviews items={reviews} />

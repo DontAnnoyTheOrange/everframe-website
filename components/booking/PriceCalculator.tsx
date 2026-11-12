@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getQuote, type QuoteResult } from "@/app/(public)/pricing/actions";
@@ -27,6 +28,7 @@ export default function PriceCalculator({
   initialPackageSlug,
 }: Props) {
   const { packages, addons, includedAddons, categories } = catalog;
+  const reduce = useReducedMotion();
 
   const services = SERVICE_ORDER.filter((s) =>
     packages.some((p) => p.service_type === s),
@@ -153,32 +155,61 @@ export default function PriceCalculator({
             2. Package
           </legend>
           <div className="grid gap-3 sm:grid-cols-2">
-            {tiers.map((p) => (
-              <label
-                key={p.id}
-                className={`has-[:focus-visible]:outline-brass flex cursor-pointer flex-col gap-1 rounded-md border p-4 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${
-                  p.id === pkg.id
-                    ? "border-brass bg-ink-2"
-                    : "border-line hover:border-mute"
-                }`}
-                data-active={p.id === pkg.id}
-              >
-                <input
-                  type="radio"
-                  name="package"
-                  className="sr-only"
-                  checked={p.id === pkg.id}
-                  onChange={() => choosePackage(p)}
-                />
-                <span className="text-bone font-serif text-xl">{p.name}</span>
-                <span className="text-brass text-sm">
-                  {formatPeso(p.price)}
-                </span>
-                <span className="text-mute text-xs">
-                  {hoursLabel(p.max_hours)}
-                </span>
-              </label>
-            ))}
+            {tiers.map((p) => {
+              const active = p.id === pkg.id;
+              return (
+                <label
+                  key={p.id}
+                  className={`has-[:focus-visible]:outline-brass relative flex cursor-pointer flex-col gap-1 rounded-md border p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${
+                    active
+                      ? "border-transparent"
+                      : "border-line hover:border-mute"
+                  }`}
+                  data-active={active}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId={reduce ? undefined : "package-highlight"}
+                      aria-hidden="true"
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 34,
+                      }}
+                      className="border-brass bg-brass/[0.07] pointer-events-none absolute inset-0 rounded-md border"
+                    />
+                  )}
+                  <input
+                    type="radio"
+                    name="package"
+                    className="sr-only"
+                    checked={active}
+                    onChange={() => choosePackage(p)}
+                  />
+                  <span className="relative flex items-start justify-between gap-2">
+                    <span className="text-bone font-serif text-2xl">
+                      {p.name}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`mt-1 flex h-5 w-5 items-center justify-center rounded-full border text-[11px] transition-colors ${
+                        active
+                          ? "border-brass bg-brass text-brass-ink"
+                          : "border-line text-transparent"
+                      }`}
+                    >
+                      ✓
+                    </span>
+                  </span>
+                  <span className="text-brass relative text-lg tabular-nums">
+                    {formatPeso(p.price)}
+                  </span>
+                  <span className="text-mute relative text-xs">
+                    {hoursLabel(p.max_hours)}
+                  </span>
+                </label>
+              );
+            })}
           </div>
           <details className="text-stone mt-4 text-sm">
             <summary className="text-bone cursor-pointer">
@@ -264,13 +295,13 @@ export default function PriceCalculator({
                 aria-label="Fewer hours"
                 disabled={hours <= 1}
                 onClick={() => setHours((h) => Math.max(1, h - 1))}
-                className="text-bone disabled:text-mute px-4 py-2"
+                className="text-bone disabled:text-mute h-12 w-12 text-xl transition-colors hover:text-[#C9A24B]"
               >
                 −
               </button>
               <output
                 aria-live="polite"
-                className="text-bone min-w-28 text-center"
+                className="text-bone min-w-32 text-center font-serif text-lg"
               >
                 {coverageLabel(pkg, hours)}
               </output>
@@ -279,29 +310,50 @@ export default function PriceCalculator({
                 aria-label="More hours"
                 disabled={hours >= MAX_HOURS}
                 onClick={() => setHours((h) => Math.min(MAX_HOURS, h + 1))}
-                className="text-bone disabled:text-mute px-4 py-2"
+                className="text-bone disabled:text-mute h-12 w-12 text-xl transition-colors hover:text-[#C9A24B]"
               >
                 +
               </button>
+            </div>
+            {/* Visual guide: filled bars are your hours; a lighter edge marks where a package ends. */}
+            <div aria-hidden="true" className="mt-3 flex max-w-xs gap-1">
+              {Array.from({ length: MAX_HOURS }, (_, i) => {
+                const h = i + 1;
+                const edge = tiers.some((t) => t.max_hours === h);
+                return (
+                  <span
+                    key={h}
+                    className={`h-2 flex-1 rounded-sm transition-colors duration-300 ${
+                      h <= hours ? "bg-brass" : "bg-line"
+                    } ${edge ? "border-bone/70 border-r-2" : ""}`}
+                  />
+                );
+              })}
             </div>
             {pkg.max_hours === null && (
               <p className="text-stone mt-2 text-xs">
                 About {hours} {hours === 1 ? "hour" : "hours"} for scheduling
               </p>
             )}
-            {autoSwitched && (
-              <p
-                role="status"
-                className="border-brass text-bone mt-3 border-l-2 pl-3 text-sm"
-              >
-                Switched to {pkg.name}: {hours} hours is more than {chosen.name}{" "}
-                covers
-                {chosen.upgrade_above_hours !== null
-                  ? ` (up to ${chosen.upgrade_above_hours} hours)`
-                  : ""}
-                .
-              </p>
-            )}
+            <AnimatePresence initial={false}>
+              {autoSwitched && (
+                <motion.p
+                  key="switched"
+                  role="status"
+                  initial={reduce ? false : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={reduce ? undefined : { opacity: 0, height: 0 }}
+                  className="border-brass text-bone mt-3 overflow-hidden border-l-2 pl-3 text-sm"
+                >
+                  Switched to {pkg.name}: {hours} hours is more than{" "}
+                  {chosen.name} covers
+                  {chosen.upgrade_above_hours !== null
+                    ? ` (up to ${chosen.upgrade_above_hours} hours)`
+                    : ""}
+                  .
+                </motion.p>
+              )}
+            </AnimatePresence>
             <p className="text-mute mt-2 text-xs">{limitNote(pkg, nextTier)}</p>
           </div>
         </div>
@@ -351,7 +403,7 @@ export default function PriceCalculator({
 
       <aside
         aria-live="polite"
-        className="border-line bg-ink-2 h-fit rounded-md border p-6 lg:sticky lg:top-6"
+        className="border-line border-t-brass bg-ink-2 h-fit rounded-md border border-t-2 p-6 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] lg:sticky lg:top-24"
       >
         <h2 className="text-bone font-serif text-2xl">Your estimate</h2>
         <p className="text-mute mt-1 text-sm">
@@ -366,7 +418,7 @@ export default function PriceCalculator({
           </p>
         )}
 
-        <dl
+        <div
           className={`mt-6 flex flex-col gap-3 text-sm transition-opacity ${loading ? "opacity-50" : ""}`}
         >
           {quote ? (
@@ -411,7 +463,7 @@ export default function PriceCalculator({
           ) : (
             <p className="text-mute">Calculating…</p>
           )}
-        </dl>
+        </div>
 
         {turnaround && <p className="text-stone mt-6 text-xs">{turnaround}.</p>}
         <p className="text-mute mt-2 text-xs">
@@ -447,6 +499,29 @@ export default function PriceCalculator({
           )}
         </div>
       </aside>
+
+      {/* Phones: the total and the next step stay in reach while you change options. */}
+      {quote && quote.total !== null && canProceed && (
+        <>
+          <div className="h-16 lg:hidden" aria-hidden="true" />
+          <div className="border-line bg-ink/95 fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t px-5 py-3 backdrop-blur lg:hidden">
+            <div>
+              <p className="text-mute text-[11px] tracking-[0.2em] uppercase">
+                Total
+              </p>
+              <p className="text-brass font-serif text-2xl tabular-nums">
+                {formatPeso(quote.total)}
+              </p>
+            </div>
+            <Link
+              href={bookingHref}
+              className="bg-brass text-brass-ink rounded-md px-5 py-3 text-sm font-medium"
+            >
+              Continue to booking
+            </Link>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -460,15 +535,22 @@ function Line({
   value: string;
   strong?: boolean;
 }) {
+  const reduce = useReducedMotion();
   return (
-    <div
+    <dl
       className={`flex items-baseline justify-between gap-4 ${strong ? "text-bone text-lg" : "text-stone"}`}
     >
       <dt>{label}</dt>
-      <dd className={`tabular-nums ${strong ? "text-brass" : "text-bone"}`}>
+      <motion.dd
+        key={value}
+        initial={reduce ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`tabular-nums ${strong ? "text-brass font-serif text-3xl" : "text-bone"}`}
+      >
         {value}
-      </dd>
-    </div>
+      </motion.dd>
+    </dl>
   );
 }
 

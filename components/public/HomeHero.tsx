@@ -5,6 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import FloatingFrames from "./FloatingFrames";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -166,6 +167,9 @@ export default function HomeHero() {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-1/4 bg-gradient-to-t from-black to-transparent md:block" />
       </div>
 
+      {/* Floating 3D frames: large screens with a mouse only; loads after the intro (see the component). */}
+      <FloatingFrames />
+
       <div className="relative z-10 flex flex-1 flex-col justify-end px-6 pt-10 pb-24 md:justify-center md:px-16 md:pb-20">
         <h1 id="hero-title" className="hero-parallax-name">
           <span className="hero-fade text-brass block max-w-[18ch] font-serif text-xl italic md:max-w-none md:text-3xl">
@@ -199,12 +203,14 @@ export default function HomeHero() {
           <div className="hero-fade mt-8 flex flex-wrap gap-3">
             <Link
               href="/portfolio"
+              data-magnetic
               className="bg-brass text-brass-ink rounded-md px-6 py-3.5 text-sm font-medium transition-transform hover:-translate-y-0.5"
             >
               View portfolio
             </Link>
             <Link
               href="/booking"
+              data-magnetic
               className="border-bone/40 text-bone hover:border-bone rounded-md border px-6 py-3.5 text-sm backdrop-blur-sm transition-colors"
             >
               Book a session

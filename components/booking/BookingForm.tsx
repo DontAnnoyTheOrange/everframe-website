@@ -496,7 +496,7 @@ export default function BookingForm(p: Props) {
         </fieldset>
       </div>
 
-      <aside className="border-line bg-ink-2 h-fit rounded-md border p-6 lg:sticky lg:top-6">
+      <aside className="border-line border-t-brass bg-ink-2 h-fit rounded-md border border-t-2 p-6 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] lg:sticky lg:top-24">
         <h2 className="text-bone font-serif text-2xl">Your request</h2>
         <p className="text-mute mt-1 text-sm">
           {SERVICE_LABEL[p.pkg.service_type]} · {p.pkg.name} ·{" "}
@@ -520,7 +520,7 @@ export default function BookingForm(p: Props) {
           <p className="text-mute text-sm">Venue: {venue.text.trim()}</p>
         )}
 
-        <dl className="mt-6 flex flex-col gap-3 text-sm">
+        <div className="mt-6 flex flex-col gap-3 text-sm">
           <Line
             label={`${p.quote.package_name} package`}
             value={formatPeso(p.quote.base_price)}
@@ -555,7 +555,7 @@ export default function BookingForm(p: Props) {
               </p>
             )}
           </div>
-        </dl>
+        </div>
 
         {p.turnaround && (
           <p className="text-stone mt-6 text-xs">{p.turnaround}.</p>
@@ -602,13 +602,15 @@ function Line({
   strong?: boolean;
 }) {
   return (
-    <div
+    <dl
       className={`flex items-baseline justify-between gap-4 ${strong ? "text-bone text-lg" : "text-stone"}`}
     >
       <dt>{label}</dt>
-      <dd className={`tabular-nums ${strong ? "text-brass" : "text-bone"}`}>
+      <dd
+        className={`tabular-nums ${strong ? "text-brass font-serif text-3xl" : "text-bone"}`}
+      >
         {value}
       </dd>
-    </div>
+    </dl>
   );
 }
