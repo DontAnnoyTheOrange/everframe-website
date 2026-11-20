@@ -155,8 +155,8 @@ export default async function SchedulePage({
         scroll={false}
         className={`block truncate rounded px-1.5 py-1 text-xs leading-tight ${
           isBlock
-            ? "bg-neutral-200 text-neutral-700 [background-image:repeating-linear-gradient(135deg,transparent_0_5px,rgb(255_255_255/0.55)_5px_10px)]"
-            : "bg-[var(--a-olive-soft)] text-[#3b4029] hover:bg-[#dde1cc]"
+            ? "bg-neutral-200 text-neutral-700 [background-image:repeating-linear-gradient(135deg,transparent_0_5px,var(--a-stripe)_5px_10px)]"
+            : "bg-[var(--a-olive-soft)] text-[var(--a-olive-ink)] hover:bg-[var(--a-olive-hover)]"
         }`}
       >
         {isBlock ? (
@@ -196,10 +196,16 @@ export default async function SchedulePage({
           </>
         }
         actions={
-          <Link href={url({ panel: "block" })} scroll={false} className="a-btn a-btn-copper">
-            <Icon name="block" size={16} />
-            Block dates
-          </Link>
+          <>
+            <Link href={url({ panel: "block" })} scroll={false} className="a-btn a-btn-copper">
+              <Icon name="block" size={16} />
+              Block dates
+            </Link>
+            <Link href="/admin/bookings/new" className="a-btn a-btn-primary">
+              <Icon name="plus" size={16} />
+              New booking
+            </Link>
+          </>
         }
       />
 
@@ -286,10 +292,10 @@ export default async function SchedulePage({
                         key={d}
                         className={`h-20 border-t border-l border-[var(--a-line)] p-1.5 align-top first:border-l-0 md:h-32 ${
                           full
-                            ? "bg-neutral-100 [background-image:repeating-linear-gradient(135deg,transparent_0_6px,rgb(0_0_0/0.035)_6px_12px)]"
+                            ? "bg-neutral-100 [background-image:repeating-linear-gradient(135deg,transparent_0_6px,var(--a-stripe-soft)_6px_12px)]"
                             : inMonth
                               ? "bg-white"
-                              : "bg-[#fbfaf7]"
+                              : "bg-[var(--a-dim)]"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -316,7 +322,7 @@ export default async function SchedulePage({
                         {/* Phones: small counters. Larger screens: the events themselves. */}
                         <div className="mt-1 flex flex-wrap gap-1 md:hidden">
                           {bookings > 0 && (
-                            <span className="rounded bg-[var(--a-olive-soft)] px-1.5 text-[0.7rem] text-[#3b4029]">
+                            <span className="rounded bg-[var(--a-olive-soft)] px-1.5 text-[0.7rem] text-[var(--a-olive-ink)]">
                               {bookings}
                             </span>
                           )}
@@ -397,7 +403,7 @@ export default async function SchedulePage({
                     <Link
                       href={e.kind === "block" ? url({ block: e.id }) : url({ booking: e.id })}
                       scroll={false}
-                      className="flex flex-wrap items-start gap-4 p-4 hover:bg-[#faf9f5]"
+                      className="flex flex-wrap items-start gap-4 p-4 hover:bg-[var(--a-hover)]"
                     >
                       <span className="w-28 flex-none text-sm tabular-nums">
                         <span className="a-serif block text-xl leading-tight">

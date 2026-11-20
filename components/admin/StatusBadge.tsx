@@ -12,7 +12,7 @@ const COLOR: Record<BookingStatus, { pill: string; dot: string }> = {
     dot: "bg-[var(--a-copper)]",
   },
   confirmed: {
-    pill: "bg-[var(--a-olive-soft)] text-[#454a32]",
+    pill: "bg-[var(--a-olive-soft)] text-[var(--a-olive-ink)]",
     dot: "bg-[var(--a-olive)]",
   },
   rejected: { pill: "bg-red-100 text-red-900", dot: "bg-red-600" },

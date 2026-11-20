@@ -8,6 +8,7 @@ import {
   Card,
   EmptyState,
   ErrorNote,
+  PageHeader,
   ThumbFallback,
 } from "@/components/admin/ui";
 import CloudImage from "@/components/portfolio/CloudImage";
@@ -173,14 +174,17 @@ export default async function AdminHome({
 
   return (
     <AdminShell name={displayName} current="dashboard">
-      <div className="mb-8">
-        <p className="a-eyebrow mb-1.5">Studio overview</p>
-        <h1>{greeting}</h1>
-        <p className="mt-2 max-w-2xl text-sm text-neutral-500">
-          Here is where your studio stands today: requests to answer, shoots
-          coming up and the work you have published.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Studio overview"
+        title={greeting}
+        description="Here is where your studio stands today: requests to answer, shoots coming up and the work you have published."
+        actions={
+          <Link href="/admin/bookings/new" className="a-btn a-btn-primary">
+            <Icon name="plus" size={16} />
+            New booking
+          </Link>
+        }
+      />
 
       {failed && (
         <ErrorNote>
@@ -289,7 +293,7 @@ export default async function AdminHome({
                   <li key={b.id}>
                     <Link
                       href={`/admin/bookings/${b.id}`}
-                      className="flex gap-3 py-3 hover:bg-[#faf9f5]"
+                      className="flex gap-3 py-3 hover:bg-[var(--a-hover)]"
                     >
                       <span className="grid h-14 w-14 flex-none place-items-center rounded-md bg-[var(--a-olive-soft)] text-center leading-none text-[var(--a-olive-d)]">
                         <span>
@@ -432,7 +436,7 @@ export default async function AdminHome({
                   <li key={p.id as string}>
                     <Link
                       href={`/admin/portfolio/${p.id as string}`}
-                      className="flex items-center gap-3 rounded-md p-1 hover:bg-[#faf9f5]"
+                      className="flex items-center gap-3 rounded-md p-1 hover:bg-[var(--a-hover)]"
                     >
                       <span className="block h-14 w-16 flex-none overflow-hidden rounded-md">
                         {cover && cloud ? (

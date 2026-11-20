@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import "@/components/admin/admin.css";
 import LoginForm from "@/components/admin/LoginForm";
+import { THEME_COOKIE, themeFor } from "@/lib/admin/theme";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logout } from "./actions";
 
@@ -16,6 +18,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { next, error } = await searchParams;
+  const theme = themeFor((await cookies()).get(THEME_COOKIE)?.value);
 
   // Already an administrator? Go straight to the dashboard.
   const supabase = await createSupabaseServerClient();
@@ -35,10 +38,10 @@ export default async function LoginPage({
 
   return (
     <main
-      style={{ colorScheme: "light" }}
+      data-theme={theme}
       className="admin-root flex min-h-screen items-center justify-center bg-neutral-50 px-4 text-neutral-900"
     >
-      <div className="w-full max-w-sm rounded-lg border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="a-card w-full max-w-sm p-8">
         <p className="a-eyebrow">Everframe</p>
         <h1 className="mt-1 text-2xl font-semibold">Admin sign in</h1>
 

@@ -132,7 +132,7 @@ export function SiteContentEditor({
                 document.getElementById(`${uid}-tab-${n.key}`)?.focus();
               }}
               tabIndex={tab === t.key ? 0 : -1}
-              className="a-nav-link flex-none justify-between whitespace-nowrap aria-selected:bg-white aria-selected:font-semibold aria-selected:text-[var(--a-ink)] aria-selected:shadow-sm"
+              className="a-nav-link flex-none justify-between whitespace-nowrap aria-selected:bg-[var(--a-card)] aria-selected:font-semibold aria-selected:text-[var(--a-ink)] aria-selected:shadow-sm"
             >
               <span>{t.label}</span>
               {tabsWithErrors.includes(t.key) && (
@@ -436,7 +436,7 @@ function ReviewItem({ review: r }: { review: Review }) {
       <blockquote className="a-serif text-xl leading-snug">&ldquo;{r.quote}&rdquo;</blockquote>
       <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-neutral-500">
         {r.author}
-        <span className={`rounded-full px-2 py-0.5 text-xs ${r.published ? "bg-[var(--a-olive-soft)] text-[#454a32]" : "bg-neutral-200 text-neutral-700"}`}>
+        <span className={`rounded-full px-2 py-0.5 text-xs ${r.published ? "bg-[var(--a-olive-soft)] text-[var(--a-olive-ink)]" : "bg-neutral-200 text-neutral-700"}`}>
           {r.published ? "Shown" : "Hidden"}
         </span>
       </p>

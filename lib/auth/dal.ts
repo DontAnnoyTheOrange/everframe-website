@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { pickDisplayName } from "@/lib/admin/account";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // The Data Access Layer: the ONE place that decides "is this person an administrator?".
@@ -24,7 +25,10 @@ export const requireAdmin = cache(async () => {
   return {
     supabase,
     user: auth.user,
-    displayName:
-      (admin.display_name as string | null) ?? auth.user.email ?? "Admin",
+    displayName: pickDisplayName(
+      auth.user.user_metadata?.display_name,
+      admin.display_name,
+      auth.user.email,
+    ),
   };
 });

@@ -1,10 +1,13 @@
 import "@/components/admin/admin.css";
+import { cookies } from "next/headers";
+import { THEME_COOKIE, themeFor } from "@/lib/admin/theme";
 import { Skeleton } from "@/components/admin/ui";
 
 // Shown while any admin page loads: the same layout shape as the real pages, so nothing jumps.
-export default function AdminLoading() {
+export default async function AdminLoading() {
+  const theme = themeFor((await cookies()).get(THEME_COOKIE)?.value);
   return (
-    <div className="admin-root min-h-screen" role="status" aria-live="polite">
+    <div className="admin-root min-h-screen" data-theme={theme} role="status" aria-live="polite">
       <span className="sr-only">Loading…</span>
       <div className="mx-auto max-w-[84rem] px-4 py-10 sm:px-6 lg:px-10">
         <Skeleton className="mb-3 h-4 w-32" />

@@ -11,7 +11,9 @@ export type NavKey =
   | "schedule"
   | "portfolio"
   | "settings"
-  | "reviews";
+  | "reviews"
+  | "account"
+  | "appearance";
 
 const GROUPS: {
   label: string;
@@ -143,6 +145,23 @@ export default function AdminNav({
         <div>
           {!isCollapsed && <p className="a-eyebrow mb-2 px-3">System</p>}
           <ul className="flex flex-col gap-1">
+            {[
+              { key: "account" as NavKey, label: "Account", href: "/admin/account", icon: "account" as IconName },
+              { key: "appearance" as NavKey, label: "Appearance", href: "/admin/account?tab=appearance", icon: "appearance" as IconName },
+            ].map((it) => (
+              <li key={it.key}>
+                <Link
+                  href={it.href}
+                  aria-current={current === it.key ? "page" : undefined}
+                  title={isCollapsed ? it.label : undefined}
+                  aria-label={isCollapsed ? it.label : undefined}
+                  className={`a-nav-link ${isCollapsed ? "justify-center px-0" : ""}`}
+                >
+                  <Icon name={it.icon} />
+                  {!isCollapsed && <span>{it.label}</span>}
+                </Link>
+              </li>
+            ))}
             <li>
               <Link
                 href="/"
@@ -195,7 +214,7 @@ export default function AdminNav({
     >
       <span
         aria-hidden="true"
-        className="a-serif grid h-9 w-9 flex-none place-items-center rounded-md bg-[var(--a-ink)] text-xl text-[#f0eee7]"
+        className="a-serif grid h-9 w-9 flex-none place-items-center rounded-md bg-[var(--a-ink)] text-xl text-[var(--a-bg)]"
       >
         E
       </span>

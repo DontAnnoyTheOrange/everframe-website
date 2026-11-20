@@ -40,7 +40,7 @@ export default function ActivityChart({
               x2={W - pad.r}
               y1={y(t)}
               y2={y(t)}
-              stroke="#e4e1d6"
+              stroke="var(--a-line)"
               strokeDasharray={t === 0 ? undefined : "3 4"}
             />
             <text
@@ -48,7 +48,7 @@ export default function ActivityChart({
               y={y(t) + 4}
               textAnchor="end"
               fontSize="11"
-              fill="#6b6a5f"
+              fill="var(--a-muted)"
             >
               {t}
             </text>
@@ -65,7 +65,7 @@ export default function ActivityChart({
                   width={barW}
                   height={y(0) - y(b.received)}
                   rx="2"
-                  fill="#73785a"
+                  fill="var(--a-olive)"
                 />
               )}
               {b.confirmed > 0 && (
@@ -75,7 +75,7 @@ export default function ActivityChart({
                   width={barW}
                   height={y(0) - y(b.confirmed)}
                   rx="2"
-                  fill="#b98260"
+                  fill="var(--a-copper)"
                 />
               )}
               {i % every === 0 && (
@@ -84,7 +84,7 @@ export default function ActivityChart({
                   y={H - 8}
                   textAnchor="middle"
                   fontSize="11"
-                  fill="#6b6a5f"
+                  fill="var(--a-muted)"
                 >
                   {b.label}
                 </text>
@@ -95,11 +95,11 @@ export default function ActivityChart({
       </svg>
       <figcaption className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-neutral-500">
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[#73785a]" />
+          <span className="h-2.5 w-2.5 rounded-sm bg-[var(--a-olive)]" />
           Requests received
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[#b98260]" />
+          <span className="h-2.5 w-2.5 rounded-sm bg-[var(--a-copper)]" />
           Now confirmed or completed
         </span>
       </figcaption>
