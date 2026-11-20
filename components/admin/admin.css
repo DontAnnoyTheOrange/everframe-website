@@ -281,3 +281,83 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* ---------- Appearance themes ---------- */
+.admin-root[data-theme="dark"] {
+  color-scheme: dark;
+  --a-bg: #171714;
+  --a-sidebar: #11110e;
+  --a-ink: #e7e5dc;
+  --a-card: #1c1c19;
+  --a-line: #2c2c26;
+  --color-neutral-50: #171714;
+  --color-neutral-100: #11110e;
+  --color-neutral-200: #2c2c26;
+  --color-neutral-300: #3a3a32;
+  --color-neutral-400: #5a584e;
+  --color-neutral-500: #8a887e;
+  --color-neutral-600: #a8a69c;
+  --color-neutral-700: #c9c7bc;
+  --color-neutral-800: #e7e5dc;
+  --color-neutral-900: #f5f3ea;
+}
+.admin-root[data-theme="dark-blue"] {
+  color-scheme: dark;
+  --a-bg: #0f172a;
+  --a-sidebar: #0e1320;
+  --a-ink: #f1f5f9;
+  --a-olive: #5b7fa6;
+  --a-olive-d: #3d5f8a;
+  --a-olive-soft: #1e293b;
+  --a-copper: #7aa3c8;
+  --a-copper-d: #4a6f9a;
+  --a-copper-soft: #1e3a5f;
+  --a-card: #1e293b;
+  --a-line: #334155;
+  --color-neutral-50: #0f172a;
+  --color-neutral-100: #0e1320;
+  --color-neutral-200: #334155;
+  --color-neutral-300: #475569;
+  --color-neutral-400: #64748b;
+  --color-neutral-500: #94a3b8;
+  --color-neutral-600: #cbd5e1;
+  --color-neutral-700: #e2e8f0;
+  --color-neutral-800: #f1f5f9;
+  --color-neutral-900: #f8fafc;
+}
+.admin-root[data-theme="dark"] .bg-white,
+.admin-root[data-theme="dark"] .bg-neutral-50,
+.admin-root[data-theme="dark-blue"] .bg-white,
+.admin-root[data-theme="dark-blue"] .bg-neutral-50 {
+  background-color: var(--a-card);
+}
+.admin-root[data-theme="dark"] .text-neutral-900,
+.admin-root[data-theme="dark"] .text-neutral-800,
+.admin-root[data-theme="dark-blue"] .text-neutral-900,
+.admin-root[data-theme="dark-blue"] .text-neutral-800 {
+  color: var(--a-ink);
+}
+.admin-root[data-theme="dark"] .border-neutral-200,
+.admin-root[data-theme="dark-blue"] .border-neutral-200 {
+  border-color: var(--a-line);
+}
+.admin-root[data-theme="dark"] .bg-neutral-100,
+.admin-root[data-theme="dark-blue"] .bg-neutral-100 {
+  background-color: var(--a-sidebar);
+}
+.admin-root[data-theme="dark"] .text-neutral-500,
+.admin-root[data-theme="dark-blue"] .text-neutral-500 {
+  color: var(--color-neutral-500);
+}
+.admin-root[data-theme="dark"] .text-neutral-600,
+.admin-root[data-theme="dark-blue"] .text-neutral-600 {
+  color: var(--color-neutral-600);
+}
+.admin-root[data-theme="dark"] .text-neutral-700,
+.admin-root[data-theme="dark-blue"] .text-neutral-700 {
+  color: var(--color-neutral-700);
+}
+.admin-root[data-theme="dark"] .hover\:bg-\[\#faf9f5\]:hover,
+.admin-root[data-theme="dark-blue"] .hover\:bg-\[\#faf9f5\]:hover {
+  background: var(--a-line);
+}

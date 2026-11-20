@@ -11,7 +11,9 @@ export type NavKey =
   | "schedule"
   | "portfolio"
   | "settings"
-  | "reviews";
+  | "reviews"
+  | "account"
+  | "appearance";
 
 const GROUPS: {
   label: string;
@@ -30,7 +32,13 @@ const GROUPS: {
     label: "Website management",
     items: [
       { key: "settings", label: "Website content", href: "/admin/settings", icon: "content" },
-      { key: "reviews", label: "Client reviews", href: "/admin/settings?tab=reviews", icon: "reviews" },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { key: "account", label: "Admin account", href: "/admin/account", icon: "content" },
+      { key: "appearance", label: "Appearance", href: "/admin/appearance", icon: "overview" },
     ],
   },
 ];
