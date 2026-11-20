@@ -222,7 +222,7 @@ export default function HomeHero() {
       <a
         href="#after-hero"
         aria-label="Scroll to the next section"
-        className="hero-fade text-mute hover:text-bone absolute bottom-6 left-6 z-10 flex items-center gap-3 text-[10px] tracking-[0.3em] uppercase md:left-16"
+        className="hero-fade text-mute hover:text-bone absolute bottom-3 left-6 z-10 flex min-h-11 items-center gap-3 text-[11px] tracking-[0.3em] uppercase md:left-16"
       >
         <span aria-hidden="true" className="bg-brass block h-px w-10" />
         Scroll

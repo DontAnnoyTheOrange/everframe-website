@@ -123,20 +123,46 @@ export function DeleteBlockButton({ blockId }: { blockId: string }) {
     deleteBlock,
     {},
   );
+  const [asking, setAsking] = useState(false);
+  // Removing a block frees those times for clients, so it asks first (two steps, no pop-up).
+  if (!asking)
+    return (
+      <div className="flex flex-col items-start gap-1">
+        <button
+          type="button"
+          onClick={() => setAsking(true)}
+          className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+        >
+          Remove block
+        </button>
+        {state.message && !state.ok && (
+          <span role="alert" className="text-xs text-red-700">
+            {state.message}
+          </span>
+        )}
+      </div>
+    );
   return (
-    <form action={action} className="flex flex-col items-end gap-1">
+    <form action={action} className="flex flex-col gap-2" role="alertdialog" aria-label="Confirm removing the block">
       <input type="hidden" name="blockId" value={blockId} />
-      <button
-        disabled={pending}
-        className="rounded-md border border-neutral-300 px-3 py-1 text-xs hover:bg-neutral-100 disabled:opacity-60"
-      >
-        {pending ? "Removing…" : "Remove block"}
-      </button>
-      {state.message && !state.ok && (
-        <span role="alert" className="text-xs text-red-700">
-          {state.message}
-        </span>
-      )}
+      <p className="text-sm">
+        Remove this block? Clients will be able to pick these times again.
+      </p>
+      <div className="flex gap-2">
+        <button
+          disabled={pending}
+          className="rounded-md bg-red-700 px-3 py-1.5 text-sm text-white disabled:opacity-60"
+        >
+          {pending ? "Removing…" : "Yes, remove it"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setAsking(false)}
+          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-100"
+        >
+          Keep it
+        </button>
+      </div>
     </form>
   );
 }

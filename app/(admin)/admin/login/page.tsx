@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import "@/components/admin/admin.css";
 import LoginForm from "@/components/admin/LoginForm";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logout } from "./actions";
@@ -35,12 +36,10 @@ export default async function LoginPage({
   return (
     <main
       style={{ colorScheme: "light" }}
-      className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 text-neutral-900"
+      className="admin-root flex min-h-screen items-center justify-center bg-neutral-50 px-4 text-neutral-900"
     >
       <div className="w-full max-w-sm rounded-lg border border-neutral-200 bg-white p-8 shadow-sm">
-        <p className="text-xs tracking-[0.2em] text-neutral-500 uppercase">
-          Everframe
-        </p>
+        <p className="a-eyebrow">Everframe</p>
         <h1 className="mt-1 text-2xl font-semibold">Admin sign in</h1>
 
         {error === "config" && (

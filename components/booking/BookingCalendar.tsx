@@ -50,7 +50,7 @@ export default function BookingCalendar({
           aria-label="Previous month"
           disabled={offset === 0}
           onClick={() => setOffset((o) => o - 1)}
-          className="text-bone disabled:text-mute px-3 py-1"
+          className="text-bone disabled:text-mute inline-flex h-11 w-11 items-center justify-center text-xl"
         >
           ‹
         </button>
@@ -62,7 +62,7 @@ export default function BookingCalendar({
           aria-label="Next month"
           disabled={offset >= MONTHS_SHOWN - 1}
           onClick={() => setOffset((o) => o + 1)}
-          className="text-bone disabled:text-mute px-3 py-1"
+          className="text-bone disabled:text-mute inline-flex h-11 w-11 items-center justify-center text-xl"
         >
           ›
         </button>

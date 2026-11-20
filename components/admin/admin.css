@@ -1,0 +1,283 @@
+/* Everframe admin: "modern editorial photography studio" look.
+   Everything is scoped to .admin-root, so the public site is never affected.
+
+   Why the colour remap below: the older admin forms use Tailwind's neutral greys. Inside .admin-root
+   those greys become the warm ivory / charcoal palette, so every existing form picks up the new look
+   without being rewritten. */
+
+.admin-root {
+  color-scheme: light;
+  --a-bg: #f8f7f3;
+  --a-sidebar: #f0eee7;
+  --a-ink: #25251f;
+  --a-olive: #73785a;
+  --a-olive-d: #5f6447;
+  --a-olive-soft: #e9ebdf;
+  --a-copper: #b98260;
+  --a-copper-d: #8f5b3c;
+  --a-copper-soft: #f4e8df;
+  --a-card: #ffffff;
+  --a-line: #e4e1d6;
+  --a-muted: #6b6a5f;
+  --a-shadow: 0 1px 2px rgb(37 37 31 / 0.05), 0 4px 14px rgb(37 37 31 / 0.04);
+
+  --color-neutral-50: #f8f7f3;
+  --color-neutral-100: #f0eee7;
+  --color-neutral-200: #e4e1d6;
+  --color-neutral-300: #d3cfc0;
+  --color-neutral-400: #a8a495;
+  --color-neutral-500: #6b6a5f;
+  --color-neutral-600: #55544a;
+  --color-neutral-700: #45443b;
+  --color-neutral-800: #33332c;
+  --color-neutral-900: #25251f;
+
+  background: var(--a-bg);
+  color: var(--a-ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Headings: serif for the big ones, sans for everything else. */
+.admin-root h1 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.admin-root .a-serif {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Existing "primary" buttons were black; they become the muted olive. */
+.admin-root .bg-neutral-900 {
+  background-color: var(--a-olive-d);
+}
+.admin-root .bg-neutral-900:hover {
+  background-color: #4e5239;
+}
+.admin-root button,
+.admin-root a {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.admin-root :focus-visible {
+  outline: 2px solid var(--a-olive);
+  outline-offset: 2px;
+}
+.admin-root input,
+.admin-root select,
+.admin-root textarea {
+  border-radius: 0.4rem;
+}
+.admin-root input:focus,
+.admin-root select:focus,
+.admin-root textarea:focus {
+  border-color: var(--a-olive);
+  outline: 2px solid var(--a-olive-soft);
+  outline-offset: 0;
+}
+.admin-root [class*="rounded-lg"][class*="border"] {
+  box-shadow: var(--a-shadow);
+}
+
+/* Cards and small pieces used by the new screens. */
+.a-card {
+  background: var(--a-card);
+  border: 1px solid var(--a-line);
+  border-radius: 0.6rem;
+  box-shadow: var(--a-shadow);
+}
+.a-card-title {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.a-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--a-muted);
+  font-weight: 600;
+}
+.a-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--a-line);
+  background: #fff;
+  color: var(--a-ink);
+  cursor: pointer;
+}
+.a-btn:hover {
+  background: var(--a-sidebar);
+}
+.a-btn-primary {
+  background: var(--a-olive-d);
+  border-color: var(--a-olive-d);
+  color: #fff;
+}
+.a-btn-primary:hover {
+  background: #4e5239;
+}
+.a-btn-copper {
+  background: var(--a-copper-soft);
+  border-color: #e6cdbb;
+  color: var(--a-copper-d);
+}
+.a-btn-copper:hover {
+  background: #efdccd;
+}
+.a-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--a-line);
+  background: #fff;
+  font-size: 0.85rem;
+  color: var(--a-ink);
+}
+.a-chip:hover {
+  background: var(--a-sidebar);
+}
+.a-chip[aria-current="page"],
+.a-chip[aria-pressed="true"] {
+  background: var(--a-olive-d);
+  border-color: var(--a-olive-d);
+  color: #fff;
+}
+.a-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--a-muted);
+  font-weight: 600;
+  background: var(--a-sidebar);
+}
+.a-table td,
+.a-table th {
+  padding: 0.75rem 1rem;
+}
+.a-table tbody tr {
+  border-top: 1px solid var(--a-line);
+}
+.a-table tbody tr:hover {
+  background: #faf9f5;
+}
+
+/* Sidebar navigation. */
+.a-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.45rem;
+  font-size: 0.9rem;
+  color: var(--a-muted);
+  position: relative;
+}
+.a-nav-link:hover {
+  background: rgb(255 255 255 / 0.7);
+  color: var(--a-ink);
+}
+.a-nav-link[aria-current="page"] {
+  background: #fff;
+  color: var(--a-ink);
+  font-weight: 600;
+  box-shadow: var(--a-shadow);
+}
+.a-nav-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.55rem;
+  bottom: 0.55rem;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--a-olive);
+}
+.a-nav-link svg {
+  flex: none;
+  color: var(--a-olive);
+}
+
+/* Loading skeleton shimmer (calm; switched off for people who prefer less motion). */
+@keyframes a-shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
+.a-skel {
+  border-radius: 0.5rem;
+  background: linear-gradient(90deg, #ece9df 0%, #f6f4ee 50%, #ece9df 100%);
+  background-size: 400px 100%;
+  animation: a-shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-skel {
+    animation: none;
+  }
+}
+
+/* Side drawer (booking details, block dates). Server-rendered, closed by a plain link. */
+.a-drawer-back {
+  position: fixed;
+  inset: 0;
+  background: rgb(37 37 31 / 0.35);
+  z-index: 60;
+}
+.a-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(34rem, 100vw);
+  background: var(--a-bg);
+  z-index: 61;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: -12px 0 40px rgb(37 37 31 / 0.18);
+  animation: a-slide 0.22s ease-out;
+}
+@keyframes a-slide {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-drawer {
+    animation: none;
+  }
+}
+
+/* Collapsed sidebar: hide labels that arrive from the server (the sign-out button). */
+[data-collapsed="true"] .a-nav-label {
+  display: none;
+}
+[data-collapsed="true"] .a-nav-link {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}

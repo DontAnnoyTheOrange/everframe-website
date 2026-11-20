@@ -129,7 +129,6 @@ function useSectionLinks() {
 
       // "#something" on this page, or a link to this very page (the logo, "Home") = back to the top.
       let target: Element | null = null;
-      let top = 0;
       if (a.hash.length > 1) {
         target = document.getElementById(decodeURIComponent(a.hash.slice(1)));
         if (!target) {
@@ -140,26 +139,41 @@ function useSectionLinks() {
           });
           return;
         }
-        top = scrollTopFor(target);
-      } else if (!a.hash) {
-        top = 0;
-      } else {
-        return;
+      } else if (a.hash) {
+        return; // a bare "#"
       }
 
       e.preventDefault();
-      const distance = Math.abs(top - window.scrollY);
-      if (reduce.matches) {
-        activeLenis?.scrollTo(top, { immediate: true, force: true });
-        window.scrollTo({ top, behavior: "instant" });
-      } else if (activeLenis) {
-        activeLenis.scrollTo(top, {
-          force: true, // also while the phone-size menu is closing
-          duration: Math.min(1.8, Math.max(0.9, distance / 2200)),
-          easing: easeInOutCubic,
-        });
+      const go = () => {
+        const dest = target ? scrollTopFor(target) : 0;
+        const distance = Math.abs(dest - window.scrollY);
+        if (reduce.matches) {
+          activeLenis?.scrollTo(dest, { immediate: true, force: true });
+          window.scrollTo({ top: dest, behavior: "instant" });
+        } else if (activeLenis) {
+          activeLenis.scrollTo(dest, {
+            force: true,
+            duration: Math.min(1.8, Math.max(0.9, distance / 2200)),
+            easing: easeInOutCubic,
+          });
+        } else {
+          window.scrollTo({ top: dest, behavior: "smooth" });
+        }
+      };
+      // The phone-size menu locks the page while it is open and unlocks as it closes. Starting the glide
+      // before that would be cancelled by the unlock, so wait (at most about a second) until it has closed.
+      if (document.body.style.overflow === "hidden") {
+        let frames = 0;
+        const wait = () => {
+          if (document.body.style.overflow !== "hidden" || ++frames > 60) {
+            requestAnimationFrame(go);
+          } else {
+            requestAnimationFrame(wait);
+          }
+        };
+        requestAnimationFrame(wait);
       } else {
-        window.scrollTo({ top, behavior: "smooth" });
+        go();
       }
 
       // Keep the address in step (so the section can be shared) and move focus there for keyboard and

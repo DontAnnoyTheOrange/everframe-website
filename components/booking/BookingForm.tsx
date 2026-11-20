@@ -46,7 +46,7 @@ type Props = {
 };
 
 const field =
-  "border-line bg-ink-2 text-bone placeholder:text-mute w-full rounded-md border px-3 py-2";
+  "border-line bg-ink-2 text-bone placeholder:text-mute w-full rounded-md border px-3 py-2.5";
 const label = "text-stone mb-2 block text-sm";
 
 export default function BookingForm(p: Props) {
@@ -574,7 +574,7 @@ export default function BookingForm(p: Props) {
           </button>
           <Link
             href={p.changeHref}
-            className="text-stone text-center text-sm underline"
+            className="text-stone inline-flex min-h-11 items-center justify-center text-sm underline"
           >
             Change package or hours
           </Link>

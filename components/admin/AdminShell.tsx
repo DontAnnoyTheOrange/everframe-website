@@ -1,66 +1,57 @@
 import Link from "next/link";
+import "@/components/admin/admin.css";
+import AdminNav, { type NavKey } from "@/components/admin/AdminNav";
+import Icon from "@/components/admin/Icon";
 import { logout } from "@/app/(admin)/admin/login/actions";
+import { formatManilaDate, todayInManila } from "@/lib/booking/manila";
 
-// The light-theme frame around every admin page: top bar, menu, who is signed in, sign out.
+// The light-theme frame around every admin page: sidebar (menu on phones), a slim top row with
+// today's date and the "New booking" shortcut, and the page itself.
+// Every page passes `name` and `current`, exactly as before, so no page needed a new structure.
 export default function AdminShell({
   name,
   current,
   children,
 }: {
   name: string;
-  current: "dashboard" | "bookings" | "schedule" | "portfolio" | "settings";
+  current: NavKey;
   children: React.ReactNode;
 }) {
-  const link = (active: boolean) =>
-    `rounded-md px-3 py-1.5 text-sm ${active ? "bg-neutral-900 text-white" : "text-neutral-700 hover:bg-neutral-200"}`;
+  const today = formatManilaDate(`${todayInManila()}T12:00:00+08:00`);
   return (
-    <div
-      style={{ colorScheme: "light" }}
-      className="min-h-screen bg-neutral-50 text-neutral-900"
-    >
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-3">
-          <span className="font-semibold">Everframe Admin</span>
-          <nav aria-label="Admin" className="flex flex-wrap gap-1">
-            <Link href="/admin" className={link(current === "dashboard")}>
-              Dashboard
-            </Link>
-            <Link
-              href="/admin/bookings"
-              className={link(current === "bookings")}
+    <div className="admin-root min-h-screen">
+      <AdminNav
+        current={current}
+        name={name}
+        signOut={
+          <form action={logout}>
+            <button
+              type="submit"
+              className="a-nav-link w-full"
+              aria-label="Sign out"
+              title="Sign out"
             >
-              Bookings
+              <Icon name="signout" />
+              <span className="a-nav-label">Sign out</span>
+            </button>
+          </form>
+        }
+      >
+        <div className="mx-auto w-full max-w-[84rem] px-4 pb-16 sm:px-6 lg:px-10">
+          <div className="flex flex-wrap items-center justify-between gap-3 py-5">
+            <p className="flex items-center gap-2 text-sm text-neutral-500">
+              <Icon name="calendar" size={16} />
+              <span>{today}</span>
+              <span className="text-neutral-400">· Manila</span>
+            </p>
+            <Link href="/admin/bookings/new" className="a-btn a-btn-primary">
+              <Icon name="plus" size={16} />
+              New booking
             </Link>
-            <Link
-              href="/admin/schedule"
-              className={link(current === "schedule")}
-            >
-              Schedule
-            </Link>
-            <Link
-              href="/admin/portfolio"
-              className={link(current === "portfolio")}
-            >
-              Portfolio
-            </Link>
-            <Link
-              href="/admin/settings"
-              className={link(current === "settings")}
-            >
-              Site content
-            </Link>
-          </nav>
-          <div className="ml-auto flex items-center gap-3 text-sm text-neutral-600">
-            <span>{name}</span>
-            <form action={logout}>
-              <button className="rounded-md border border-neutral-300 px-3 py-1.5 hover:bg-neutral-100">
-                Sign out
-              </button>
-            </form>
           </div>
+          <main id="admin-main">{children}</main>
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      </AdminNav>
     </div>
   );
 }

@@ -52,7 +52,7 @@ export default function PackagesOverview({ catalog }: { catalog: Catalog }) {
                       </span>
                       <Link
                         href={`/booking?package=${p.slug}`}
-                        className="border-line text-bone hover:border-brass rounded-md border px-3 py-1.5 text-xs"
+                        className="border-line text-bone hover:border-brass inline-flex min-h-11 items-center rounded-md border px-4 text-xs"
                       >
                         Book this
                       </Link>
@@ -67,7 +67,7 @@ export default function PackagesOverview({ catalog }: { catalog: Catalog }) {
       <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-sm">
         <Link
           href="/pricing"
-          className="text-stone hover:text-bone underline underline-offset-4"
+          className="text-stone hover:text-bone inline-flex min-h-11 items-center underline underline-offset-4"
         >
           Open the full calculator for extra hours and add-ons
         </Link>

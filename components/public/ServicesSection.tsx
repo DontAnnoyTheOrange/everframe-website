@@ -117,7 +117,7 @@ export default function ServicesSection({ items }: { items: ServiceItem[] }) {
                     )}
                     <Link
                       href="/pricing"
-                      className="text-brass mt-4 inline-block text-sm underline underline-offset-4"
+                      className="text-brass mt-2 inline-flex min-h-11 items-center text-sm underline underline-offset-4"
                     >
                       See packages and prices
                     </Link>

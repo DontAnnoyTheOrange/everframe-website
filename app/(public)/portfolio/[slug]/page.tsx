@@ -37,7 +37,10 @@ export default async function ProjectPage({ params }: Params) {
 
   return (
     <main className="px-6 pt-6 pb-24 md:px-16">
-      <Link href="/portfolio" className="text-stone text-sm underline">
+      <Link
+        href="/portfolio"
+        className="text-stone inline-flex min-h-11 items-center text-sm underline"
+      >
         ← All projects
       </Link>
       {!found ? (

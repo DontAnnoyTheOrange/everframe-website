@@ -287,6 +287,41 @@ export async function toggleFeatured(formData: FormData): Promise<void> {
   revalidatePath("/", "layout");
 }
 
+// Quick show / hide from the project grid. Hidden projects stay in the admin but leave the public site.
+export async function togglePublished(formData: FormData): Promise<void> {
+  const { supabase } = await requireAdmin();
+  const id = String(formData.get("projectId") ?? "");
+  if (!idSchema.safeParse(id).success) return;
+  await supabase
+    .from("portfolio_projects")
+    .update({ is_published: formData.get("on") === "1" })
+    .eq("id", id);
+  refresh(id);
+  revalidatePath("/", "layout");
+}
+
+// Saves a drag-and-drop order: the ids, first to last, as the visitors should see them.
+export async function reorderProjects(ids: string[]): Promise<ImageResult> {
+  const { supabase } = await requireAdmin();
+  const parsed = z.array(idSchema).min(1).max(500).safeParse(ids);
+  if (!parsed.success || new Set(parsed.data).size !== parsed.data.length)
+    return { ok: false, message: "Could not read the new order. Refresh and try again." };
+  for (let k = 0; k < parsed.data.length; k++) {
+    const { error } = await supabase
+      .from("portfolio_projects")
+      .update({ sort_order: k + 1 })
+      .eq("id", parsed.data[k]);
+    if (error) {
+      console.error("reorder projects failed:", error.message);
+      refresh();
+      return { ok: false, message: "Could not save the new order. Please try again." };
+    }
+  }
+  refresh();
+  revalidatePath("/", "layout");
+  return { ok: true, message: "Order saved." };
+}
+
 // Deletes the project and its photos (database rows first, then the files in Cloudinary).
 export async function deleteProject(formData: FormData): Promise<void> {
   const { supabase } = await requireAdmin();

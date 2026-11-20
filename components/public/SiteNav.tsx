@@ -17,7 +17,7 @@ const links = [
 const SECTION_IDS = ["work", "studio", "services", "pricing", "contact"];
 
 const cta =
-  "bg-brass text-brass-ink rounded-md px-4 py-2 text-sm font-medium transition-transform hover:-translate-y-0.5";
+  "bg-brass text-brass-ink hidden min-h-11 items-center rounded-md px-4 text-sm font-medium transition-transform hover:-translate-y-0.5 min-[350px]:inline-flex";
 
 // Sticks to the top. Transparent over the hero, then a dark blurred bar once you scroll.
 // On small screens the links live in a full-screen menu.
@@ -112,72 +112,73 @@ export default function SiteNav() {
   };
 
   return (
-    <header
-      className={`sticky top-0 z-40 h-[72px] transition-colors duration-300 ${
-        scrolled || open
-          ? "border-line bg-ink/85 border-b backdrop-blur-md"
-          : "border-b border-transparent"
-      }`}
-    >
-      <div className="flex h-full items-center justify-between px-6 md:px-16">
-        <Link
-          href="/"
-          className="text-bone font-serif text-xl tracking-wide"
-          onClick={() => setOpen(false)}
-        >
-          Everframe
-        </Link>
-        <nav
-          aria-label="Main"
-          className="text-stone hidden gap-8 text-sm lg:flex"
-        >
-          {links.map((l) => (
-            <Link
-              key={l.label}
-              href={l.href}
-              aria-current={current(l)}
-              data-active={current(l) ? "true" : undefined}
-              className="hover:text-bone data-[active=true]:text-bone relative after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#C9A24B] after:transition-transform hover:after:scale-x-100 data-[active=true]:after:scale-x-100"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-3">
-          <Link href="/booking" data-magnetic className={cta}>
-            Book a session
-          </Link>
-          <button
-            ref={toggle}
-            type="button"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            onClick={() => setOpen((o) => !o)}
-            className="text-bone border-line flex h-10 w-10 items-center justify-center rounded-md border lg:hidden"
+    <>
+      <header
+        className={`sticky top-0 z-40 h-[72px] transition-colors duration-300 ${
+          scrolled || open
+            ? "border-line bg-ink/85 border-b backdrop-blur-md"
+            : "border-b border-transparent"
+        }`}
+      >
+        <div className="flex h-full items-center justify-between px-6 md:px-16">
+          <Link
+            href="/"
+            className="text-bone -mx-1 inline-flex min-h-11 items-center px-1 font-serif text-xl tracking-wide"
+            onClick={() => setOpen(false)}
           >
-            <span aria-hidden="true" className="relative block h-3 w-5">
-              <span
-                className={`absolute left-0 block h-px w-5 bg-current transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`}
-              />
-              <span
-                className={`absolute top-1.5 left-0 block h-px w-5 bg-current transition-opacity ${open ? "opacity-0" : ""}`}
-              />
-              <span
-                className={`absolute left-0 block h-px w-5 bg-current transition-all ${open ? "top-1.5 -rotate-45" : "top-3"}`}
-              />
-            </span>
-          </button>
+            Everframe
+          </Link>
+          <nav
+            aria-label="Main"
+            className="text-stone hidden gap-8 text-sm lg:flex"
+          >
+            {links.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                aria-current={current(l)}
+                data-active={current(l) ? "true" : undefined}
+                className="hover:text-bone data-[active=true]:text-bone relative after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-[#C9A24B] after:transition-transform hover:after:scale-x-100 data-[active=true]:after:scale-x-100"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/booking" data-magnetic className={cta}>
+              Book a session
+            </Link>
+            <button
+              ref={toggle}
+              type="button"
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              onClick={() => setOpen((o) => !o)}
+              className="text-bone border-line flex h-11 w-11 items-center justify-center rounded-md border lg:hidden"
+            >
+              <span aria-hidden="true" className="relative block h-3 w-5">
+                <span
+                  className={`absolute left-0 block h-px w-5 bg-current transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`}
+                />
+                <span
+                  className={`absolute top-1.5 left-0 block h-px w-5 bg-current transition-opacity ${open ? "opacity-0" : ""}`}
+                />
+                <span
+                  className={`absolute left-0 block h-px w-5 bg-current transition-all ${open ? "top-1.5 -rotate-45" : "top-3"}`}
+                />
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-
+      </header>
       {open && (
         <div
           id="mobile-menu"
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
-          className="bg-ink fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto px-6 py-10 lg:hidden"
+          className="bg-ink fixed inset-x-0 top-[72px] bottom-0 z-40 overflow-y-auto overscroll-contain px-6 pt-4 pb-[max(2rem,env(safe-area-inset-bottom))] lg:hidden"
         >
           <nav aria-label="Mobile">
             <ul className="flex flex-col">
@@ -189,7 +190,7 @@ export default function SiteNav() {
                     aria-current={current(l)}
                     data-active={current(l) ? "true" : undefined}
                     onClick={() => setOpen(false)}
-                    className="text-bone data-[active=true]:text-brass block py-5 font-serif text-3xl"
+                    className="text-bone data-[active=true]:text-brass block py-4 font-serif text-2xl sm:py-5 sm:text-3xl"
                   >
                     {l.label}
                   </Link>
@@ -200,12 +201,12 @@ export default function SiteNav() {
           <Link
             href="/booking"
             onClick={() => setOpen(false)}
-            className="bg-brass text-brass-ink mt-8 block rounded-md px-6 py-4 text-center font-medium"
+            className="bg-brass text-brass-ink mt-6 block rounded-md px-6 py-4 text-center font-medium"
           >
             Book a session
           </Link>
         </div>
       )}
-    </header>
+    </>
   );
 }

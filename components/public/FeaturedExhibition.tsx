@@ -142,7 +142,7 @@ export default function FeaturedExhibition({
         </div>
         <Link
           href="/portfolio"
-          className="text-stone hover:text-bone shrink-0 text-sm underline underline-offset-4"
+          className="text-stone hover:text-bone inline-flex min-h-11 shrink-0 items-center text-sm underline underline-offset-4"
         >
           Full portfolio
         </Link>
@@ -177,7 +177,7 @@ export default function FeaturedExhibition({
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="text-brass text-[11px] tracking-[0.22em] uppercase">
+                  <p className="text-brass text-xs tracking-[0.22em] uppercase">
                     {String(i + 1).padStart(2, "0")} · {it.categoryName}
                   </p>
                   <h3 className="text-bone font-serif text-2xl md:text-3xl">

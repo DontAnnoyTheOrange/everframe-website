@@ -21,7 +21,7 @@ type Props = {
 type Mode = "on" | "off";
 
 const field =
-  "border-line bg-ink-2 text-bone placeholder:text-mute w-full rounded-md border px-3 py-2";
+  "border-line bg-ink-2 text-bone placeholder:text-mute w-full rounded-md border px-3 py-2.5";
 
 // Venue box with map search (Geoapify). Choosing a suggestion saves its exact coordinates.
 // Without a key (or if the search fails) it is a plain address box, so a booking is never blocked.

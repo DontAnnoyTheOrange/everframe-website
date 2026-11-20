@@ -19,20 +19,29 @@ export default function SiteFooter({
             in {homeBase}.
           </p>
         </div>
-        <nav
-          aria-label="Footer"
-          className="flex flex-wrap gap-x-6 gap-y-2 text-sm"
-        >
-          <Link href="/portfolio" className="hover:text-bone">
+        <nav aria-label="Footer" className="flex flex-wrap gap-x-6 text-sm">
+          <Link
+            href="/portfolio"
+            className="hover:text-bone inline-flex min-h-11 items-center"
+          >
             Portfolio
           </Link>
-          <Link href="/pricing" className="hover:text-bone">
+          <Link
+            href="/pricing"
+            className="hover:text-bone inline-flex min-h-11 items-center"
+          >
             Pricing
           </Link>
-          <Link href="/booking" className="hover:text-bone">
+          <Link
+            href="/booking"
+            className="hover:text-bone inline-flex min-h-11 items-center"
+          >
             Booking
           </Link>
-          <Link href="/contact" className="hover:text-bone">
+          <Link
+            href="/contact"
+            className="hover:text-bone inline-flex min-h-11 items-center"
+          >
             Contact
           </Link>
         </nav>

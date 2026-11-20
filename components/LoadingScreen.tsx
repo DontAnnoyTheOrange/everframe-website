@@ -155,7 +155,7 @@ export default function LoadingScreen() {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
-              className="flex items-center gap-2.5 text-[11px] tracking-[0.3em] text-[#C9A24B]"
+              className="flex items-center gap-2.5 text-xs tracking-[0.3em] text-[#C9A24B]"
             >
               <span className="inline-block h-px w-5 bg-[#C9A24B]" />
               PRODUCTIONS

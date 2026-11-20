@@ -212,7 +212,7 @@ export default function PriceCalculator({
             })}
           </div>
           <details className="text-stone mt-4 text-sm">
-            <summary className="text-bone cursor-pointer">
+            <summary className="text-bone flex min-h-11 cursor-pointer items-center">
               What is included in {pkg.name}
             </summary>
             <ul className="mt-3 list-disc space-y-1 pl-5">
@@ -235,7 +235,7 @@ export default function PriceCalculator({
               id="event-type"
               value={categorySlug}
               onChange={(e) => chooseCategory(e.target.value)}
-              className="border-line bg-ink-2 text-bone w-full rounded-md border px-3 py-2"
+              className="border-line bg-ink-2 text-bone w-full rounded-md border px-3 py-2.5"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.slug}>
@@ -366,13 +366,13 @@ export default function PriceCalculator({
             {addons.map((a) => {
               const included = includedIds.has(a.id);
               return (
-                <label key={a.id} className="flex items-center gap-3">
+                <label key={a.id} className="flex min-h-11 items-center gap-3">
                   <input
                     type="checkbox"
                     checked={included || addonIds.includes(a.id)}
                     disabled={included}
                     onChange={() => toggleAddon(a.id)}
-                    className="h-4 w-4 accent-[#c9a24b]"
+                    className="h-5 w-5 shrink-0 accent-[#c9a24b]"
                   />
                   <span className="text-bone">{a.name}</span>
                   <span className="text-mute">
@@ -383,12 +383,12 @@ export default function PriceCalculator({
                 </label>
               );
             })}
-            <label className="flex items-center gap-3">
+            <label className="flex min-h-11 items-center gap-3">
               <input
                 type="checkbox"
                 checked={outsideBase}
                 onChange={(e) => setOutsideBase(e.target.checked)}
-                className="h-4 w-4 accent-[#c9a24b]"
+                className="h-5 w-5 shrink-0 accent-[#c9a24b]"
               />
               <span className="text-bone">
                 Venue is outside {catalog.homeBase || "our home area"}
@@ -503,10 +503,10 @@ export default function PriceCalculator({
       {/* Phones: the total and the next step stay in reach while you change options. */}
       {quote && quote.total !== null && canProceed && (
         <>
-          <div className="h-16 lg:hidden" aria-hidden="true" />
-          <div className="border-line bg-ink/95 fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t px-5 py-3 backdrop-blur lg:hidden">
+          <div className="h-24 lg:hidden" aria-hidden="true" />
+          <div className="border-line bg-ink/95 fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t px-6 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur lg:hidden">
             <div>
-              <p className="text-mute text-[11px] tracking-[0.2em] uppercase">
+              <p className="text-mute text-xs tracking-[0.2em] uppercase">
                 Total
               </p>
               <p className="text-brass font-serif text-2xl tabular-nums">
@@ -515,7 +515,7 @@ export default function PriceCalculator({
             </div>
             <Link
               href={bookingHref}
-              className="bg-brass text-brass-ink rounded-md px-5 py-3 text-sm font-medium"
+              className="bg-brass text-brass-ink inline-flex min-h-11 items-center rounded-md px-5 text-sm font-medium"
             >
               Continue to booking
             </Link>

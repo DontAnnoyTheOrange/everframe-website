@@ -102,7 +102,7 @@ export default async function Home() {
     {
       key: "video",
       title: "Videography",
-      text: `Cinematic highlight videos and event coverage. Edited video is delivered within ${catalog?.turnaround.video ?? "2 weeks"}.`,
+      text: `Cinematic highlight videos and event coverage. ${catalog?.turnaround.video ?? "Edited video within 2 weeks after the event"}.`,
       note: from("video"),
       image: {
         kind: "local",

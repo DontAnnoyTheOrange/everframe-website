@@ -246,3 +246,42 @@ export async function deleteTestimonial(formData: FormData): Promise<void> {
   revalidatePath("/", "layout");
   revalidatePath("/admin/settings");
 }
+
+const editSchema = testimonialSchema.extend({ id: z.uuid() });
+
+// Changes the words, the name, or both of an existing review.
+export async function updateTestimonial(
+  _prev: TestimonialState,
+  formData: FormData,
+): Promise<TestimonialState> {
+  const { supabase } = await requireAdmin();
+  const parsed = editSchema.safeParse({
+    id: String(formData.get("id") ?? ""),
+    quote: String(formData.get("quote") ?? ""),
+    author: String(formData.get("author") ?? ""),
+    isPublished: formData.get("isPublished") === "on",
+  });
+  if (!parsed.success) {
+    const fields: Record<string, string> = {};
+    for (const i of parsed.error.issues) {
+      const k = String(i.path[0]);
+      if (!(k in fields)) fields[k] = i.message;
+    }
+    return { message: "Please check the highlighted fields.", fields };
+  }
+  const { error } = await supabase
+    .from("testimonials")
+    .update({
+      quote: parsed.data.quote,
+      author: parsed.data.author,
+      is_published: parsed.data.isPublished,
+    })
+    .eq("id", parsed.data.id);
+  if (error) {
+    console.error("update testimonial failed:", error.message);
+    return { message: "Could not save the review. Please try again." };
+  }
+  revalidatePath("/", "layout");
+  revalidatePath("/admin/settings");
+  return { ok: true, message: "Review updated.", nonce: crypto.randomUUID() };
+}

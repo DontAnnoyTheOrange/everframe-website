@@ -78,7 +78,7 @@ export default function PortfolioGrid({
                 e.preventDefault();
                 choose(c.slug);
               }}
-              className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
+              className={`inline-flex min-h-11 items-center rounded-full border px-5 text-sm transition-colors ${
                 c.slug === active
                   ? "border-brass bg-brass text-brass-ink"
                   : "border-line text-stone hover:text-bone"
@@ -137,12 +137,12 @@ export default function PortfolioGrid({
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
                 {c.featured && (
-                  <span className="border-brass/60 text-brass absolute top-3 left-3 rounded-full border bg-black/50 px-2.5 py-0.5 text-[10px] tracking-[0.2em] uppercase backdrop-blur-sm">
+                  <span className="border-brass/60 text-brass absolute top-3 left-3 rounded-full border bg-black/50 px-2.5 py-0.5 text-xs tracking-[0.2em] uppercase backdrop-blur-sm">
                     Featured
                   </span>
                 )}
                 <div className="absolute inset-x-0 bottom-0 translate-y-1 p-4 transition-transform duration-500 group-hover:translate-y-0 md:p-5">
-                  <p className="text-brass text-[11px] tracking-[0.22em] uppercase">
+                  <p className="text-brass text-xs tracking-[0.22em] uppercase">
                     {c.categoryName}
                   </p>
                   <h2 className="text-bone font-serif text-2xl leading-tight md:text-3xl">
