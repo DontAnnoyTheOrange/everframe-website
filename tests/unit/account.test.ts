@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { themeFor } from "./theme";
+import { themeFor } from "@/lib/admin/theme";
 import {
   emailSchema,
   fieldErrors,
   nameSchema,
   passwordSchema,
   pickDisplayName,
-} from "./account";
+} from "@/lib/admin/account";
 
 describe("account rules", () => {
   it("checks the name", () => {
